@@ -1,0 +1,92 @@
+!----------------------------------------------------------------------
+!MODYLAS ver. 1.1.0 
+!
+!Copyright (c) 2014-2019 Nagoya University
+!              2020-2023 The University of Tokyo
+!
+!Released under the MIT license.
+!see https://opensource.org/licenses/MIT
+!----------------------------------------------------------------------
+!MODYLAS Developers:
+!Yoshimichi Andoh, Kazushi Fujimoto, Tatsuya Sakashita, Noriyuki Yoshii, 
+!Zhiye Tang, Jiachao Zhang, Yuta Asano, Ryo Urano, Tetsuro Nagai, 
+!Atsushi Yamada, Hidekazu Kojima, Kensuke Iwahashi, Fumiyasu Mizutani, 
+!Shin-ichi Ichikawa, and Susumu Okazaki.
+!----------------------------------------------------------------------
+!    integer :: j,k,n,p,q, ind_1dim
+!    integer :: m1,m2
+!    integer :: m2_b
+!    integer :: ind_1dim_b
+!    real(4) :: tmp_shml
+!    real(4) :: tmp_ce_r, tmp_ce_i
+
+!  !$omp& private(j,k,n,p,q, m1,m2,m2_b, ind_1dim,ind_1dim_b, tmp_shml, tmp_ce_r, tmp_ce_i) &
+
+! SIMD loop type code. For an use of transposed rotation matrix for each J as an input.
+! Purpose is to avoid reduction within SIMD to decrease instruction and local recurrence.
+! Another purpose is to reduce load/store by making outer loop unrolled.
+!
+! Drawback is poor parallelism of instruction. But the outer-loop unrolled code will have 
+! more instruction level parallelism.
+! S. Ichikawa, Jan 2019.
+
+!---- Outer Reduction Loop Type Rolled Code.
+                  wm_north = Czero
+                  wl_north = Czero
+
+                  ! Direct rotation
+                  do j=0,nmax                  ! parallel loop.
+                     m2_b = j*(j+1)/2 + 1               ! translating the indices (j,q) to 1-dim index
+                     ind_1dim_b = j*(j+1)*(2*j+1)/6 + 1 ! translating the indices (j,p,q) to 1-dim index
+                     do q=0,j                  ! reduction loop.
+                        m2 = m2_b + q                   ! translating the indices (j,q) to 1-dim index
+                        ind_1dim = ind_1dim_b + (j+1)*q ! translating the indices (j,p,q) to 1-dim index
+!ocl simd_redundant_vl(5)
+                        do p=0,j               ! parallel loop.
+                           m1 = m2_b + p                ! translating the indices (j,p) to 1-dim index
+                           wm_north(m1,1) = wm_north(m1,1) &
+                                & + wm(m2,1,icz1,icy1,icx1) * sh_rot1(ind_1dim+p,1,irz,iry,irx,ilevel) &
+                                & + wm(m2,2,icz1,icy1,icx1) * sh_rot2(ind_1dim+p,1,irz,iry,irx,ilevel)
+                           wm_north(m1,2) = wm_north(m1,2) &
+                                & + wm(m2,1,icz1,icy1,icx1) * sh_rot1(ind_1dim+p,2,irz,iry,irx,ilevel) &
+                                & + wm(m2,2,icz1,icy1,icx1) * sh_rot2(ind_1dim+p,2,irz,iry,irx,ilevel)
+                        enddo
+                     enddo
+                  enddo
+
+                  ! M2L for z-axis
+                  do j=0,nmax
+                     do n=0,nmax
+                        tmp_shml = shml(j+n,irz,iry,irx,ilevel)
+                        m1 = j*(j+1)/2 + 1 + 0
+                        m2 = n*(n+1)/2 + 1 + 0
+!ocl simd_redundant_vl(5)
+                        do k=0,min(j,n)
+                          wl_north(m1+k,1) = wl_north(m1+k,1) + wm_north(m2+k,1) * tmp_shml
+                          wl_north(m1+k,2) = wl_north(m1+k,2) + wm_north(m2+k,2) * tmp_shml
+                        enddo
+                     enddo
+                  enddo
+
+                  ! Inverse rotation
+                  do j=0,nmax                  ! parallel loop.
+                     m2_b = j*(j+1)/2 + 1               ! translating the indices (j,q) to 1-dim index
+                     ind_1dim_b = j*(j+1)*(2*j+1)/6 + 1 ! translating the indices (j,p,q) to 1-dim index
+                     do q=0,j                  ! reduction loop.
+                        m2 = m2_b + q                   ! translating the indices (j,q) to 1-dim index
+                        ind_1dim = ind_1dim_b + (j+1)*q ! translating the indices (j,p,q) to 1-dim index
+!ocl simd_redundant_vl(5)
+                        do p=0,j               ! parallel loop.
+                           m1 = m2_b + p                ! translating the indices (j,p) to 1-dim index
+                           tmp_ce_r = &
+                                & + wl_north(m2,1) * sh_inv_rot1(ind_1dim+p,1,irz,iry,irx,ilevel) &
+                                & + wl_north(m2,2) * sh_inv_rot2(ind_1dim+p,1,irz,iry,irx,ilevel)
+                           wl_omp(m1,1,icz0,icy0,icx0,iam) = wl_omp(m1,1,icz0,icy0,icx0,iam) + tmp_ce_r
+                           tmp_ce_i = &
+                                & + wl_north(m2,1) * sh_inv_rot1(ind_1dim+p,2,irz,iry,irx,ilevel) &
+                                & + wl_north(m2,2) * sh_inv_rot2(ind_1dim+p,2,irz,iry,irx,ilevel)
+                           wl_omp(m1,2,icz0,icy0,icx0,iam) = wl_omp(m1,2,icz0,icy0,icx0,iam) + tmp_ce_i
+                        enddo
+                     enddo
+                  enddo
+!---- end Outer Reduction Loop Type Rolled Code.

@@ -1,0 +1,225 @@
+/*
+*----------------------------------------------------------------------
+*MODYLAS ver. 1.1.0 
+*
+*Copyright (c) 2014-2019 Nagoya University
+*              2020-2023 The University of Tokyo
+*
+*Released under the MIT license.
+*see https://opensource.org/licenses/MIT
+*----------------------------------------------------------------------
+*MODYLAS Developers:
+*Yoshimichi Andoh, Kazushi Fujimoto, Tatsuya Sakashita, Noriyuki Yoshii, 
+*Zhiye Tang, Jiachao Zhang, Yuta Asano, Ryo Urano, Tetsuro Nagai, 
+*Atsushi Yamada, Hidekazu Kojima, Kensuke Iwahashi, Fumiyasu Mizutani, 
+*Shin-ichi Ichikawa, and Susumu Okazaki.
+*---------------------------------------------------------------------
+*/
+
+#ifdef PROF_MAPROF
+  use mod_maprof
+#endif
+
+#define  TM_ALL    1    /*  ! includes all. */
+#define  TM_NPT_A  2    /*! includes cost under npt_a. rec_curr_state and unmeasured local code around npt_a are not included. */
+#define  TM_NVE    3    /*! includes cost under nve. rec_curr_state and unmeasured local code around npt_a are not included. */
+#define  TM_P2M    4
+#define  TM_M2M    5
+#define  TM_M2L    6
+#define  TM_L2L    7
+#define  TM_L2P    8
+#define  TM_FMM_EWALD             9
+#define  TM_FMM_COMM_GLOBAL      10
+#define  TM_FMM_COMM_LOCAL       11
+#define  TM_COMM_FMM_SUPER       12
+#define  TM_BG_ENE               13
+#define  TM_BCG_SURF             14
+#define  TM_RM_EWALD_SURF        15
+#define  TM_FLONG_POST           16
+#define  TM_M2L_TRANSP           17
+#define  TM_M2L_REDUCT           18
+
+#define  TM_ALLREDUCE_VIR          20  /* included in TM_PRE_MTLOOP, TM_MTLOOP_SHAKEITR_LOCAL, and TM_MTLOOP_RATTLEITR_LOCAL.*/
+#define  TM_MTLOOP_SEGPREP         21
+#define  TM_MTLOOP_SHAKEITR_LOCAL  22
+#define  TM_SHAKE_ROLL             23
+#define  TM_MTLOOP_SHAKEITR_POST   24
+#define  TM_MTLOOP_LOCAL           25  /* for NVE */
+
+#define  TM_ROLL_CONV              26
+#define  TM_ALLREDUCE_ROLL         27  /* not included in TM_SHAKE_ROLL nor in TM_RATTLE_ROLL nor in TM_ROLL_CONV.*/
+#define  TM_COMM_BOUND             28
+#define  TM_COMM_DIRECT3           29
+#define  TM_APPL_PBC               30
+#define  TM_FSHORT                 31
+#define  TM_COMM_DIRECT2_FSHORT    32
+#define  TM_RMVOID_ETC             33
+#define  TM_FORCES_MIDDLE_BUFINIT  34
+#define  TM_WRAP_FORCES_LOCAL      35  /* for NVE. */
+#define  TM_FMIDDL                 36  /* for NVE. includes TM_PME_NEAR */
+#define  TM_COMM_DIRECT2_FSHT_MDL_LNG 37  /* for NVE. */
+
+#define  TM_ENERGY_DIRECT          38
+#define  TM_FMM_NEAR               39  /* included in TM_ENERGY_DIRECT, used when Not MTD.*/
+#define  TM_COMM_DIRECT2_FMIDDL    40
+#define  TM_MTLOOP_SEGPREP2        41
+#define  TM_MTLOOP_RATTLEITR_LOCAL 42
+#define  TM_RATTLE_ROLL            43
+#define  TM_RM_MOM                 44
+#define  TM_ALLREDUCE_RM_MOM       45  /* independent.*/
+#define  TM_THERMO                 46  /* called also from out of TM_ALL. Cared by TIME_PROFILE_START.*/
+#define  TM_ALLREDUCE_THERMO       47  /* included in TM_THERMO. called also from out of TM_ALL. */
+#define  TM_PRE_MTLOOP             48
+#define  TM_CHARMM_DIHEDRAL        49  /* included in TM_FSHORT.*/
+#define  TM_CHARMM_ANGLE           50  /* included in TM_FSHORT.*/
+#define  TM_CHARMM_BOND            51  /* included in TM_FSHORT.*/
+#define  TM_ALLREDUCE_SCALERVIRIAL 52  /* included in TM_MTLOOP_SHAKEITR_LOCAL and TM_MTLOOP_RATTLEITR_LOCAL */
+
+#define  TM_PME_NEAR               53
+#define  TM_FMM_IO                 54
+#define  TM_FLONG_PRE              55  /* for PME flong. */
+#define  TM_PME                    56  /* includes TM_PME_ss_ww. TM_ADD_PMEWALD, TM_ADD_PMEWALD_GATHER, TM_PMEWALD_PZFFT3DV, TM_COMM_QGRID */
+#define  TM_ADD_PMEWALD            57  /* for PME flong. */
+#define  TM_ADD_PMEWALD_GATHER     58  /* for PME flong */
+#define  TM_PMEWALD_PZFFT3DV       59  /* for PME flong. includes alltoall comm. */
+#define  TM_COMM_QGRID             60  /* for PME flong. */
+#define  TM_PME_ss_ww              61  /* includes FFT, comm. interval named XXX_TI0 */
+#define  TM_ADD_PMEWALD_TI0        62  /* for PME flong. */
+#define  TM_ADD_PMEWALD_GATHER_TI0 63  /* for PME flong */
+#define  TM_PMEWALD_PZFFT3DV_TI0   64  /* for PME flong. includes alltoall comm. */
+#define  TM_COMM_QGRID_TI0         65  /* for PME flong. */
+
+#define  TM_IO_RECCURSTATE         66
+
+#define  TMB_PRE_MAINLOOP          67   /* unnecessary for performance evaluation.*/
+#define  TMB_MDSTEP_TOP            68   /* unnecessary for performance evaluation.*/
+#define  TMB_FMM_COMM_GLOBAL       69
+#define  TMB_FMM_COMM_LOCAL        70
+#define  TMB_COMM_BOUND            71
+#define  TMB_COMM_DIRECT3          72
+#define  TMB_COMM_DIRECT2_FSHORT   73
+#define  TMB_COMM_DIRECT2_FMIDDL   74
+#define  TMB_COMM_DIRECT2_FSHT_MDL_LNG 75
+#define  TMB_COMM_FMM_SUPER        76
+#define  TMB_ALLREDUCE_VIR         77  /* included in TM_PRE_MTLOOP, TM_MTLOOP_RATTLEITR_LOCAL, TM_MTLOOP_SHAKEITR_LOCAL, and TM_MTLOOP_RATTLEITR_LOCAL.*/
+#define  TMB_ALLREDUCE_ROLL        78  /* not included in TM_SHAKE_ROLL nor in TM_RATTLE_ROLL nor in TM_ROLL_CONV.*/
+#define  TMB_ALLREDUCE_RM_MOM      79  /* independent.*/
+#define  TMB_ALLREDUCE_THERMO      80  /* included in TM_THERMO. called also from out of TM_ALL. */
+#define  TMB_FMM_IO                81
+#define  TMB_IO_RECCURSTATE        82  /* independent.*/
+#define  TMB_ALLREDUCE_SCALERVIRIAL 83 /* included in TM_MTLOOP_SHAKEITR_LOCAL and TM_MTLOOP_RATTLEITR_LOCAL */
+#define  TMB_ADD_PMEWALD_GATHER    84  /* for PME flong. */
+#define  TMB_PMEWALD_PZFFT3DV      85  /* for PME flong. */
+#define  TMB_COMM_QGRID            86  /* for PME flong. */
+
+#define  TM_EVB_MD2EVB             87
+#define  TM_COMEVB_PBC_ATOM        88
+#define  TM_COMEVB_PBC_SEGMENT     89
+#define  TM_EVB_COMPOSIT_LIST      90
+#define  TM_EVB_IO_CMPSITLIST      91 /* included in TM_EVB_COMPOSIT_LIST. */
+#define  TM_COMEVB_MERGE_EVBGRP    92
+#define  TM_COMEVB_PBC_EVBGRP      93
+#define  TM_EVB_ENERGY             94
+#define  TM_EVB_EIGENV             95
+#define  TM_COMEVB_PBC_EIGENV      96
+#define  TM_EVB_SEGPURGE           97
+#define  TM_COMEVB_MERGE_SEGPURGE  98
+#define  TM_EVB_UPD_WSEGC          99
+#define  TM_COMEVB_SEGSORT         100
+#define  TM_EVB2MD                 101
+
+#define  TMB_COMEVB_PBC_ATOM       102
+#define  TMB_COMEVB_PBC_SEGMENT    103
+#define  TMB_EVB_IO_CMPSITLIST     104   /* included in TM_EVB_COMPOSIT_LIST. barrier after IO. */
+#define  TMB_COMEVB_MERGE_EVBGRP   105
+#define  TMB_COMEVB_PBC_EVBGRP     106
+#define  TMB_COMEVB_PBC_EIGENV     107
+#define  TMB_COMEVB_MERGE_SEGPURGE 108
+#define  TMB_COMEVB_SEGSORT        109
+
+#define  TM_M2L_LEVEL_OFFSET       110  /* use as TM_M2L_LEVEL_OFFSET+ilevel to define timer ID for each level. */
+#define  TM_M2L_LEV0               110
+#define  TM_M2L_LEV1               111
+#define  TM_M2L_LEV2               112
+#define  TM_M2L_LEV3               113
+#define  TM_M2L_LEV4               114
+#define  TM_M2L_LEV5               115
+#define  TM_M2L_LEV6               116
+#define  TM_M2L_LEV7               117
+#define  TM_M2L_LEV8               118
+
+#define  TM_FFT_F1                 120
+#define  TM_ALLTOALL_F1            121
+#define  TM_FFTFCOPY_F1            122
+#define  TM_FFT_F2                 123
+#define  TM_ALLTOALL_F2            124
+#define  TM_FFT_F3                 125
+#define  TM_FFT_B1                 126
+#define  TM_ALLTOALL_B1            127
+#define  TM_FFT_B2                 128
+#define  TM_FFTFCOPY_B1            129
+#define  TM_ALLTOALL_B2            130
+#define  TM_FFT_B3                 131
+
+#define  TMB_ALLTOALL_F1           132
+#define  TMB_ALLTOALL_F2           133
+#define  TMB_ALLTOALL_B1           134
+#define  TMB_ALLTOALL_B2           135
+
+#define  TM_PME_COEFF              136
+#define  TM_PME_BSPFILL            137
+#define  TM_PME_CALC_QGRID         138
+#define  TM_PME_ENERGY             139
+#define  TM_PME_FORCE              140
+
+
+#ifdef PROF_MAPROF
+
+#ifdef PROF_PA
+#define TIME_START(id) call maprof_time_start(id);  call start_collection(#id)
+#define TIME_STOP(id)  call maprof_time_stop(id);  call stop_collection(#id)
+#else
+#define TIME_START(id) call maprof_time_start(id)
+#define TIME_STOP(id)  call maprof_time_stop(id)
+#endif
+
+#elif defined PROF_PA
+
+#define TIME_START(id) call start_collection(#id)
+#define TIME_STOP(id)  call stop_collection(#id)
+
+#elif defined(PROF_TIMER)
+
+#define TIME_INIT            call timer_init
+#define TIME_PROFILE_START   call timer_profsta
+#define TIME_PROFILE_STOP    call timer_profstop
+#define TIME_BARRIER(id)     call timer_bar(id)
+#define TIME_START(id)       call timer_sta(id)
+#define TIME_STOP(id)        call timer_end(id)
+#define TIME_FINALIZE        call timer_fin
+
+#if defined(PROF_TIMER_DETAIL)
+#define TIMED_BARRIER_COM(id,icomm)  call timer_bar_com(id,icomm)
+#define TIMED_START(id)      call timer_sta(id)
+#define TIMED_STOP(id)       call timer_end(id)
+#else
+#define TIMED_BARRIER_COM(id,icomm) continue
+#define TIMED_START(id)      continue
+#define TIMED_STOP(id)       continue
+#endif
+
+#else
+
+/* dummy statement 'continue' */
+#define TIME_INIT            continue
+#define TIME_PROFILE_START   continue
+#define TIME_PROFILE_STOP    continue
+#define TIME_BARRIER(id)     continue
+#define TIME_START(id)       continue
+#define TIME_STOP(id)        continue
+#define TIME_FINALIZE        continue
+#define TIMED_BARRIER_COM(id,icomm)  continue
+#define TIMED_START(id)      continue
+#define TIMED_STOP(id)       continue
+
+#endif

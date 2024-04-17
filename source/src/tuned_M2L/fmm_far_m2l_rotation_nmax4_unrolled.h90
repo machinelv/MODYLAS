@@ -1,0 +1,439 @@
+!----------------------------------------------------------------------
+!MODYLAS ver. 1.1.0 
+!
+!Copyright (c) 2014-2019 Nagoya University
+!              2020-2023 The University of Tokyo
+!
+!Released under the MIT license.
+!see https://opensource.org/licenses/MIT
+!----------------------------------------------------------------------
+!MODYLAS Developers:
+!Yoshimichi Andoh, Kazushi Fujimoto, Tatsuya Sakashita, Noriyuki Yoshii, 
+!Zhiye Tang, Jiachao Zhang, Yuta Asano, Ryo Urano, Tetsuro Nagai, 
+!Atsushi Yamada, Hidekazu Kojima, Kensuke Iwahashi, Fumiyasu Mizutani, 
+!Shin-ichi Ichikawa, and Susumu Okazaki.
+!----------------------------------------------------------------------
+! M2L in FMM with rotation: original (not unrolled) code for developer's convenience
+
+!    integer :: j,k,n,p,q, ind_1dim
+!    real(8) :: tmp_shml
+
+!  !$omp& private(j,k,n,p,q, m1,m2, ind_1dim, tmp_shml) &
+
+                ! wm_north = dcmplx(0.d0,0.d0)
+                ! wl_north = dcmplx(0.d0,0.d0)
+                ! ! Direct rotation
+                ! do j=0,nmax
+                !    do p=0,j
+                !       m1 = j*(j+1)/2 + 1 + p   ! translating the indices (j,p) to 1-dim index
+                !       do q=0,j
+                !          m2 = j*(j+1)/2 + 1 + q   ! translating the indices (j,q) to 1-dim index
+                !!obs      ind_1dim = j*(j+1)*(2*j+1)/6 + (j+1)*p + q + 1    ! translating the indices (j,p,q) to 1-dim index
+                !          ind_1dim = j*(j+1)*(2*j+1)/6 + (j+1)*q + p + 1    ! translating the indices (j,p,q) to 1-dim index
+                !          wm_north(m1) = wm_north(m1) &
+                !               & + real(wm(m2,icz1,icy1,icx1)) * sh_rot1(ind_1dim,irz,iry,irx,ilevel) &
+                !               & + imag(wm(m2,icz1,icy1,icx1)) * sh_rot2(ind_1dim,irz,iry,irx,ilevel)
+                !       enddo
+                !    enddo
+                ! enddo
+                
+                ! ! M2L for z-axis
+                ! do j=0,nmax
+                !    do n=0,nmax
+                !       tmp_shml = shml(j+n,irz,iry,irx,ilevel)
+                !       m1 = j*(j+1)/2 + 1 + 0
+                !       m2 = n*(n+1)/2 + 1 + 0
+                !       do k=0,min(j,n)
+                !          wl_north(m1+k) = wl_north(m1+k) + wm_north(m2+k) * tmp_shml
+                !       enddo
+                !    enddo
+                ! enddo
+                
+                ! ! Inverse rotation
+                ! do j=0,nmax
+                !    do p=0,j
+                !       m1 = j*(j+1)/2 + 1 + p   ! translating the indices (j,p) to 1-dim index
+                !       do q=0,j
+                !          m2 = j*(j+1)/2 + 1 + q   ! translating the indices (j,q) to 1-dim index
+                !!obs      ind_1dim = j*(j+1)*(2*j+1)/6 + (j+1)*p + q + 1    ! translating the indices (j,p,q) to 1-dim index
+                !          ind_1dim = j*(j+1)*(2*j+1)/6 + (j+1)*q + p + 1    ! translating the indices (j,p,q) to 1-dim index
+                !          wl_omp(m1,icz0,icy0,icx0,iam) = wl_omp(m1,icz0,icy0,icx0,iam) &
+                !               & + real(wl_north(m2)) * sh_inv_rot1(ind_1dim,irz,iry,irx,ilevel) &
+                !               & + imag(wl_north(m2)) * sh_inv_rot2(ind_1dim,irz,iry,irx,ilevel)
+                !       enddo
+                !    enddo
+                ! enddo
+
+! M2L in FMM with rotation: generated code of unrolling for nmax=4
+                ! Direct rotation
+                ! j=0, p=0
+                wm_north(1) = &
+                  &   real(wm(1,icz1,icy1,icx1)) * sh_rot1(1,irz,iry,irx,ilevel) &
+                  & + imag(wm(1,icz1,icy1,icx1)) * sh_rot2(1,irz,iry,irx,ilevel)
+!                 &   real(wm(1,icz1,icy1,icx1)) * sh_rot1(1,irz,iry,irx,ilevel) &
+!                 & + imag(wm(1,icz1,icy1,icx1)) * sh_rot2(1,irz,iry,irx,ilevel)
+                ! j=1, p=0
+                wm_north(2) = &
+                  &   real(wm(2,icz1,icy1,icx1)) * sh_rot1(2,irz,iry,irx,ilevel) &
+                  & + imag(wm(2,icz1,icy1,icx1)) * sh_rot2(2,irz,iry,irx,ilevel) &
+                  & + real(wm(3,icz1,icy1,icx1)) * sh_rot1(4,irz,iry,irx,ilevel) &
+                  & + imag(wm(3,icz1,icy1,icx1)) * sh_rot2(4,irz,iry,irx,ilevel)
+                ! j=1, p=1
+                wm_north(3) = &
+                  &   real(wm(2,icz1,icy1,icx1)) * sh_rot1(3,irz,iry,irx,ilevel) &
+                  & + imag(wm(2,icz1,icy1,icx1)) * sh_rot2(3,irz,iry,irx,ilevel) &
+                  & + real(wm(3,icz1,icy1,icx1)) * sh_rot1(5,irz,iry,irx,ilevel) &
+                  & + imag(wm(3,icz1,icy1,icx1)) * sh_rot2(5,irz,iry,irx,ilevel)
+                ! j=2, p=0
+                wm_north(4) = &
+                  &   real(wm(4,icz1,icy1,icx1)) * sh_rot1(6,irz,iry,irx,ilevel) &
+                  & + imag(wm(4,icz1,icy1,icx1)) * sh_rot2(6,irz,iry,irx,ilevel) &
+                  & + real(wm(5,icz1,icy1,icx1)) * sh_rot1(9,irz,iry,irx,ilevel) &
+                  & + imag(wm(5,icz1,icy1,icx1)) * sh_rot2(9,irz,iry,irx,ilevel) &
+                  & + real(wm(6,icz1,icy1,icx1)) * sh_rot1(12,irz,iry,irx,ilevel) &
+                  & + imag(wm(6,icz1,icy1,icx1)) * sh_rot2(12,irz,iry,irx,ilevel)
+                ! j=2, p=1
+                wm_north(5) = &
+                  &   real(wm(4,icz1,icy1,icx1)) * sh_rot1(7,irz,iry,irx,ilevel) &
+                  & + imag(wm(4,icz1,icy1,icx1)) * sh_rot2(7,irz,iry,irx,ilevel) &
+                  & + real(wm(5,icz1,icy1,icx1)) * sh_rot1(10,irz,iry,irx,ilevel) &
+                  & + imag(wm(5,icz1,icy1,icx1)) * sh_rot2(10,irz,iry,irx,ilevel) &
+                  & + real(wm(6,icz1,icy1,icx1)) * sh_rot1(13,irz,iry,irx,ilevel) &
+                  & + imag(wm(6,icz1,icy1,icx1)) * sh_rot2(13,irz,iry,irx,ilevel)
+                ! j=2, p=2
+                wm_north(6) = &
+                  &   real(wm(4,icz1,icy1,icx1)) * sh_rot1( 8,irz,iry,irx,ilevel) &
+                  & + imag(wm(4,icz1,icy1,icx1)) * sh_rot2( 8,irz,iry,irx,ilevel) &
+                  & + real(wm(5,icz1,icy1,icx1)) * sh_rot1(11,irz,iry,irx,ilevel) &
+                  & + imag(wm(5,icz1,icy1,icx1)) * sh_rot2(11,irz,iry,irx,ilevel) &
+                  & + real(wm(6,icz1,icy1,icx1)) * sh_rot1(14,irz,iry,irx,ilevel) &
+                  & + imag(wm(6,icz1,icy1,icx1)) * sh_rot2(14,irz,iry,irx,ilevel)
+                ! j=3, p=0
+                wm_north(7) = &
+                  &   real(wm(7,icz1,icy1,icx1)) * sh_rot1(15,irz,iry,irx,ilevel) &
+                  & + imag(wm(7,icz1,icy1,icx1)) * sh_rot2(15,irz,iry,irx,ilevel) &
+                  & + real(wm(8,icz1,icy1,icx1)) * sh_rot1(19,irz,iry,irx,ilevel) &
+                  & + imag(wm(8,icz1,icy1,icx1)) * sh_rot2(19,irz,iry,irx,ilevel) &
+                  & + real(wm(9,icz1,icy1,icx1)) * sh_rot1(23,irz,iry,irx,ilevel) &
+                  & + imag(wm(9,icz1,icy1,icx1)) * sh_rot2(23,irz,iry,irx,ilevel) &
+                  & + real(wm(10,icz1,icy1,icx1)) * sh_rot1(27,irz,iry,irx,ilevel) &
+                  & + imag(wm(10,icz1,icy1,icx1)) * sh_rot2(27,irz,iry,irx,ilevel)
+                ! j=3, p=1
+                wm_north(8) = &
+                  &   real(wm(7,icz1,icy1,icx1)) * sh_rot1(16,irz,iry,irx,ilevel) &
+                  & + imag(wm(7,icz1,icy1,icx1)) * sh_rot2(16,irz,iry,irx,ilevel) &
+                  & + real(wm(8,icz1,icy1,icx1)) * sh_rot1(20,irz,iry,irx,ilevel) &
+                  & + imag(wm(8,icz1,icy1,icx1)) * sh_rot2(20,irz,iry,irx,ilevel) &
+                  & + real(wm(9,icz1,icy1,icx1)) * sh_rot1(24,irz,iry,irx,ilevel) &
+                  & + imag(wm(9,icz1,icy1,icx1)) * sh_rot2(24,irz,iry,irx,ilevel) &
+                  & + real(wm(10,icz1,icy1,icx1)) * sh_rot1(28,irz,iry,irx,ilevel) &
+                  & + imag(wm(10,icz1,icy1,icx1)) * sh_rot2(28,irz,iry,irx,ilevel)
+                ! j=3, p=2
+                wm_north(9) = &
+                  &   real(wm(7,icz1,icy1,icx1)) * sh_rot1(17,irz,iry,irx,ilevel) &
+                  & + imag(wm(7,icz1,icy1,icx1)) * sh_rot2(17,irz,iry,irx,ilevel) &
+                  & + real(wm(8,icz1,icy1,icx1)) * sh_rot1(21,irz,iry,irx,ilevel) &
+                  & + imag(wm(8,icz1,icy1,icx1)) * sh_rot2(21,irz,iry,irx,ilevel) &
+                  & + real(wm(9,icz1,icy1,icx1)) * sh_rot1(25,irz,iry,irx,ilevel) &
+                  & + imag(wm(9,icz1,icy1,icx1)) * sh_rot2(25,irz,iry,irx,ilevel) &
+                  & + real(wm(10,icz1,icy1,icx1)) * sh_rot1(29,irz,iry,irx,ilevel) &
+                  & + imag(wm(10,icz1,icy1,icx1)) * sh_rot2(29,irz,iry,irx,ilevel)
+                ! j=3, p=3
+                wm_north(10) = &
+                  &   real(wm(7,icz1,icy1,icx1)) * sh_rot1(18,irz,iry,irx,ilevel) &
+                  & + imag(wm(7,icz1,icy1,icx1)) * sh_rot2(18,irz,iry,irx,ilevel) &
+                  & + real(wm(8,icz1,icy1,icx1)) * sh_rot1(22,irz,iry,irx,ilevel) &
+                  & + imag(wm(8,icz1,icy1,icx1)) * sh_rot2(22,irz,iry,irx,ilevel) &
+                  & + real(wm(9,icz1,icy1,icx1)) * sh_rot1(26,irz,iry,irx,ilevel) &
+                  & + imag(wm(9,icz1,icy1,icx1)) * sh_rot2(26,irz,iry,irx,ilevel) &
+                  & + real(wm(10,icz1,icy1,icx1)) * sh_rot1(30,irz,iry,irx,ilevel) &
+                  & + imag(wm(10,icz1,icy1,icx1)) * sh_rot2(30,irz,iry,irx,ilevel)
+                ! j=4, p=0
+                wm_north(11) = &
+                  &   real(wm(11,icz1,icy1,icx1)) * sh_rot1(31,irz,iry,irx,ilevel) &
+                  & + imag(wm(11,icz1,icy1,icx1)) * sh_rot2(31,irz,iry,irx,ilevel) &
+                  & + real(wm(12,icz1,icy1,icx1)) * sh_rot1(36,irz,iry,irx,ilevel) &
+                  & + imag(wm(12,icz1,icy1,icx1)) * sh_rot2(36,irz,iry,irx,ilevel) &
+                  & + real(wm(13,icz1,icy1,icx1)) * sh_rot1(41,irz,iry,irx,ilevel) &
+                  & + imag(wm(13,icz1,icy1,icx1)) * sh_rot2(41,irz,iry,irx,ilevel) &
+                  & + real(wm(14,icz1,icy1,icx1)) * sh_rot1(46,irz,iry,irx,ilevel) &
+                  & + imag(wm(14,icz1,icy1,icx1)) * sh_rot2(46,irz,iry,irx,ilevel) &
+                  & + real(wm(15,icz1,icy1,icx1)) * sh_rot1(51,irz,iry,irx,ilevel) &
+                  & + imag(wm(15,icz1,icy1,icx1)) * sh_rot2(51,irz,iry,irx,ilevel)
+                ! j=4, p=1
+                wm_north(12) = &
+                  &   real(wm(11,icz1,icy1,icx1)) * sh_rot1(32,irz,iry,irx,ilevel) &
+                  & + imag(wm(11,icz1,icy1,icx1)) * sh_rot2(32,irz,iry,irx,ilevel) &
+                  & + real(wm(12,icz1,icy1,icx1)) * sh_rot1(37,irz,iry,irx,ilevel) &
+                  & + imag(wm(12,icz1,icy1,icx1)) * sh_rot2(37,irz,iry,irx,ilevel) &
+                  & + real(wm(13,icz1,icy1,icx1)) * sh_rot1(42,irz,iry,irx,ilevel) &
+                  & + imag(wm(13,icz1,icy1,icx1)) * sh_rot2(42,irz,iry,irx,ilevel) &
+                  & + real(wm(14,icz1,icy1,icx1)) * sh_rot1(47,irz,iry,irx,ilevel) &
+                  & + imag(wm(14,icz1,icy1,icx1)) * sh_rot2(47,irz,iry,irx,ilevel) &
+                  & + real(wm(15,icz1,icy1,icx1)) * sh_rot1(52,irz,iry,irx,ilevel) &
+                  & + imag(wm(15,icz1,icy1,icx1)) * sh_rot2(52,irz,iry,irx,ilevel)
+                ! j=4, p=2
+                wm_north(13) = &
+                  &   real(wm(11,icz1,icy1,icx1)) * sh_rot1(33,irz,iry,irx,ilevel) &
+                  & + imag(wm(11,icz1,icy1,icx1)) * sh_rot2(33,irz,iry,irx,ilevel) &
+                  & + real(wm(12,icz1,icy1,icx1)) * sh_rot1(38,irz,iry,irx,ilevel) &
+                  & + imag(wm(12,icz1,icy1,icx1)) * sh_rot2(38,irz,iry,irx,ilevel) &
+                  & + real(wm(13,icz1,icy1,icx1)) * sh_rot1(43,irz,iry,irx,ilevel) &
+                  & + imag(wm(13,icz1,icy1,icx1)) * sh_rot2(43,irz,iry,irx,ilevel) &
+                  & + real(wm(14,icz1,icy1,icx1)) * sh_rot1(48,irz,iry,irx,ilevel) &
+                  & + imag(wm(14,icz1,icy1,icx1)) * sh_rot2(48,irz,iry,irx,ilevel) &
+                  & + real(wm(15,icz1,icy1,icx1)) * sh_rot1(53,irz,iry,irx,ilevel) &
+                  & + imag(wm(15,icz1,icy1,icx1)) * sh_rot2(53,irz,iry,irx,ilevel)
+                ! j=4, p=3
+                wm_north(14) = &
+                  &   real(wm(11,icz1,icy1,icx1)) * sh_rot1(34,irz,iry,irx,ilevel) &
+                  & + imag(wm(11,icz1,icy1,icx1)) * sh_rot2(34,irz,iry,irx,ilevel) &
+                  & + real(wm(12,icz1,icy1,icx1)) * sh_rot1(39,irz,iry,irx,ilevel) &
+                  & + imag(wm(12,icz1,icy1,icx1)) * sh_rot2(39,irz,iry,irx,ilevel) &
+                  & + real(wm(13,icz1,icy1,icx1)) * sh_rot1(44,irz,iry,irx,ilevel) &
+                  & + imag(wm(13,icz1,icy1,icx1)) * sh_rot2(44,irz,iry,irx,ilevel) &
+                  & + real(wm(14,icz1,icy1,icx1)) * sh_rot1(49,irz,iry,irx,ilevel) &
+                  & + imag(wm(14,icz1,icy1,icx1)) * sh_rot2(49,irz,iry,irx,ilevel) &
+                  & + real(wm(15,icz1,icy1,icx1)) * sh_rot1(54,irz,iry,irx,ilevel) &
+                  & + imag(wm(15,icz1,icy1,icx1)) * sh_rot2(54,irz,iry,irx,ilevel)
+                ! j=4, p=4
+                wm_north(15) = &
+                  &   real(wm(11,icz1,icy1,icx1)) * sh_rot1(35,irz,iry,irx,ilevel) &
+                  & + imag(wm(11,icz1,icy1,icx1)) * sh_rot2(35,irz,iry,irx,ilevel) &
+                  & + real(wm(12,icz1,icy1,icx1)) * sh_rot1(40,irz,iry,irx,ilevel) &
+                  & + imag(wm(12,icz1,icy1,icx1)) * sh_rot2(40,irz,iry,irx,ilevel) &
+                  & + real(wm(13,icz1,icy1,icx1)) * sh_rot1(45,irz,iry,irx,ilevel) &
+                  & + imag(wm(13,icz1,icy1,icx1)) * sh_rot2(45,irz,iry,irx,ilevel) &
+                  & + real(wm(14,icz1,icy1,icx1)) * sh_rot1(50,irz,iry,irx,ilevel) &
+                  & + imag(wm(14,icz1,icy1,icx1)) * sh_rot2(50,irz,iry,irx,ilevel) &
+                  & + real(wm(15,icz1,icy1,icx1)) * sh_rot1(55,irz,iry,irx,ilevel) &
+                  & + imag(wm(15,icz1,icy1,icx1)) * sh_rot2(55,irz,iry,irx,ilevel)
+                
+                ! M2L for z-axis
+                ! j=0, k=0
+                wl_north(1) = &
+                  &   wm_north(1) * shml(0,irz,iry,irx,ilevel) &
+                  & + wm_north(2) * shml(1,irz,iry,irx,ilevel) &
+                  & + wm_north(4) * shml(2,irz,iry,irx,ilevel) &
+                  & + wm_north(7) * shml(3,irz,iry,irx,ilevel) &
+                  & + wm_north(11) * shml(4,irz,iry,irx,ilevel)
+                ! j=1, k=0
+                wl_north(2) = &
+                  &   wm_north(1) * shml(1,irz,iry,irx,ilevel) &
+                  & + wm_north(2) * shml(2,irz,iry,irx,ilevel) &
+                  & + wm_north(4) * shml(3,irz,iry,irx,ilevel) &
+                  & + wm_north(7) * shml(4,irz,iry,irx,ilevel) &
+                  & + wm_north(11) * shml(5,irz,iry,irx,ilevel)
+                ! j=1, k=1
+                wl_north(3) = &
+                  &   wm_north(3) * shml(2,irz,iry,irx,ilevel) &
+                  & + wm_north(5) * shml(3,irz,iry,irx,ilevel) &
+                  & + wm_north(8) * shml(4,irz,iry,irx,ilevel) &
+                  & + wm_north(12) * shml(5,irz,iry,irx,ilevel)
+                ! j=2, k=0
+                wl_north(4) = &
+                  &   wm_north(1) * shml(2,irz,iry,irx,ilevel) &
+                  & + wm_north(2) * shml(3,irz,iry,irx,ilevel) &
+                  & + wm_north(4) * shml(4,irz,iry,irx,ilevel) &
+                  & + wm_north(7) * shml(5,irz,iry,irx,ilevel) &
+                  & + wm_north(11) * shml(6,irz,iry,irx,ilevel)
+                ! j=2, k=1
+                wl_north(5) = &
+                  &   wm_north(3) * shml(3,irz,iry,irx,ilevel) &
+                  & + wm_north(5) * shml(4,irz,iry,irx,ilevel) &
+                  & + wm_north(8) * shml(5,irz,iry,irx,ilevel) &
+                  & + wm_north(12) * shml(6,irz,iry,irx,ilevel)
+                ! j=2, k=2
+                wl_north(6) = &
+                  &   wm_north(6) * shml(4,irz,iry,irx,ilevel) &
+                  & + wm_north(9) * shml(5,irz,iry,irx,ilevel) &
+                  & + wm_north(13) * shml(6,irz,iry,irx,ilevel)
+                ! j=3, k=0
+                wl_north(7) = &
+                  &   wm_north(1) * shml(3,irz,iry,irx,ilevel) &
+                  & + wm_north(2) * shml(4,irz,iry,irx,ilevel) &
+                  & + wm_north(4) * shml(5,irz,iry,irx,ilevel) &
+                  & + wm_north(7) * shml(6,irz,iry,irx,ilevel) &
+                  & + wm_north(11) * shml(7,irz,iry,irx,ilevel)
+                ! j=3, k=1
+                wl_north(8) = &
+                  &   wm_north(3) * shml(4,irz,iry,irx,ilevel) &
+                  & + wm_north(5) * shml(5,irz,iry,irx,ilevel) &
+                  & + wm_north(8) * shml(6,irz,iry,irx,ilevel) &
+                  & + wm_north(12) * shml(7,irz,iry,irx,ilevel)
+                ! j=3, k=2
+                wl_north(9) = &
+                  &   wm_north(6) * shml(5,irz,iry,irx,ilevel) &
+                  & + wm_north(9) * shml(6,irz,iry,irx,ilevel) &
+                  & + wm_north(13) * shml(7,irz,iry,irx,ilevel)
+                ! j=3, k=3
+                wl_north(10) = &
+                  &   wm_north(10) * shml(6,irz,iry,irx,ilevel) &
+                  & + wm_north(14) * shml(7,irz,iry,irx,ilevel)
+                ! j=4, k=0
+                wl_north(11) = &
+                  &   wm_north(1) * shml(4,irz,iry,irx,ilevel) &
+                  & + wm_north(2) * shml(5,irz,iry,irx,ilevel) &
+                  & + wm_north(4) * shml(6,irz,iry,irx,ilevel) &
+                  & + wm_north(7) * shml(7,irz,iry,irx,ilevel) &
+                  & + wm_north(11) * shml(8,irz,iry,irx,ilevel)
+                ! j=4, k=1
+                wl_north(12) = &
+                  &   wm_north(3) * shml(5,irz,iry,irx,ilevel) &
+                  & + wm_north(5) * shml(6,irz,iry,irx,ilevel) &
+                  & + wm_north(8) * shml(7,irz,iry,irx,ilevel) &
+                  & + wm_north(12) * shml(8,irz,iry,irx,ilevel)
+                ! j=4, k=2
+                wl_north(13) = &
+                  &   wm_north(6) * shml(6,irz,iry,irx,ilevel) &
+                  & + wm_north(9) * shml(7,irz,iry,irx,ilevel) &
+                  & + wm_north(13) * shml(8,irz,iry,irx,ilevel)
+                ! j=4, k=3
+                wl_north(14) = &
+                  &   wm_north(10) * shml(7,irz,iry,irx,ilevel) &
+                  & + wm_north(14) * shml(8,irz,iry,irx,ilevel)
+                ! j=4, k=4
+                wl_north(15) = &
+                     &   wm_north(15) * shml(8,irz,iry,irx,ilevel)
+                
+                ! Inverse rotation
+                ! j=0, p=0
+                wl_omp(1,icz0,icy0,icx0,iam) = wl_omp(1,icz0,icy0,icx0,iam) &
+                  & + real(wl_north(1)) * sh_inv_rot1(1,irz,iry,irx,ilevel) &
+                  & + imag(wl_north(1)) * sh_inv_rot2(1,irz,iry,irx,ilevel)
+                ! j=1, p=0
+                wl_omp(2,icz0,icy0,icx0,iam) = wl_omp(2,icz0,icy0,icx0,iam) &
+                  & + real(wl_north(2)) * sh_inv_rot1(2,irz,iry,irx,ilevel) &
+                  & + imag(wl_north(2)) * sh_inv_rot2(2,irz,iry,irx,ilevel) &
+                  & + real(wl_north(3)) * sh_inv_rot1(4,irz,iry,irx,ilevel) &
+                  & + imag(wl_north(3)) * sh_inv_rot2(4,irz,iry,irx,ilevel)
+                ! j=1, p=1
+                wl_omp(3,icz0,icy0,icx0,iam) = wl_omp(3,icz0,icy0,icx0,iam) &
+                  & + real(wl_north(2)) * sh_inv_rot1(3,irz,iry,irx,ilevel) &
+                  & + imag(wl_north(2)) * sh_inv_rot2(3,irz,iry,irx,ilevel) &
+                  & + real(wl_north(3)) * sh_inv_rot1(5,irz,iry,irx,ilevel) &
+                  & + imag(wl_north(3)) * sh_inv_rot2(5,irz,iry,irx,ilevel)
+                ! j=2, p=0
+                wl_omp(4,icz0,icy0,icx0,iam) = wl_omp(4,icz0,icy0,icx0,iam) &
+                  & + real(wl_north(4)) * sh_inv_rot1(6,irz,iry,irx,ilevel) &
+                  & + imag(wl_north(4)) * sh_inv_rot2(6,irz,iry,irx,ilevel) &
+                  & + real(wl_north(5)) * sh_inv_rot1(9,irz,iry,irx,ilevel) &
+                  & + imag(wl_north(5)) * sh_inv_rot2(9,irz,iry,irx,ilevel) &
+                  & + real(wl_north(6)) * sh_inv_rot1(12,irz,iry,irx,ilevel) &
+                  & + imag(wl_north(6)) * sh_inv_rot2(12,irz,iry,irx,ilevel)
+                ! j=2, p=1
+                wl_omp(5,icz0,icy0,icx0,iam) = wl_omp(5,icz0,icy0,icx0,iam) &
+                  & + real(wl_north(4)) * sh_inv_rot1(7,irz,iry,irx,ilevel) &
+                  & + imag(wl_north(4)) * sh_inv_rot2(7,irz,iry,irx,ilevel) &
+                  & + real(wl_north(5)) * sh_inv_rot1(10,irz,iry,irx,ilevel) &
+                  & + imag(wl_north(5)) * sh_inv_rot2(10,irz,iry,irx,ilevel) &
+                  & + real(wl_north(6)) * sh_inv_rot1(13,irz,iry,irx,ilevel) &
+                  & + imag(wl_north(6)) * sh_inv_rot2(13,irz,iry,irx,ilevel)
+                ! j=2, p=2
+                wl_omp(6,icz0,icy0,icx0,iam) = wl_omp(6,icz0,icy0,icx0,iam) &
+                  & + real(wl_north(4)) * sh_inv_rot1( 8,irz,iry,irx,ilevel) &
+                  & + imag(wl_north(4)) * sh_inv_rot2( 8,irz,iry,irx,ilevel) &
+                  & + real(wl_north(5)) * sh_inv_rot1(11,irz,iry,irx,ilevel) &
+                  & + imag(wl_north(5)) * sh_inv_rot2(11,irz,iry,irx,ilevel) &
+                  & + real(wl_north(6)) * sh_inv_rot1(14,irz,iry,irx,ilevel) &
+                  & + imag(wl_north(6)) * sh_inv_rot2(14,irz,iry,irx,ilevel)
+                ! j=3, p=0
+                wl_omp(7,icz0,icy0,icx0,iam) = wl_omp(7,icz0,icy0,icx0,iam) &
+                  & + real(wl_north(7)) * sh_inv_rot1(15,irz,iry,irx,ilevel) &
+                  & + imag(wl_north(7)) * sh_inv_rot2(15,irz,iry,irx,ilevel) &
+                  & + real(wl_north(8)) * sh_inv_rot1(19,irz,iry,irx,ilevel) &
+                  & + imag(wl_north(8)) * sh_inv_rot2(19,irz,iry,irx,ilevel) &
+                  & + real(wl_north(9)) * sh_inv_rot1(23,irz,iry,irx,ilevel) &
+                  & + imag(wl_north(9)) * sh_inv_rot2(23,irz,iry,irx,ilevel) &
+                  & + real(wl_north(10)) * sh_inv_rot1(27,irz,iry,irx,ilevel) &
+                  & + imag(wl_north(10)) * sh_inv_rot2(27,irz,iry,irx,ilevel)
+                ! j=3, p=1
+                wl_omp(8,icz0,icy0,icx0,iam) = wl_omp(8,icz0,icy0,icx0,iam) &
+                  & + real(wl_north(7)) * sh_inv_rot1(16,irz,iry,irx,ilevel) &
+                  & + imag(wl_north(7)) * sh_inv_rot2(16,irz,iry,irx,ilevel) &
+                  & + real(wl_north(8)) * sh_inv_rot1(20,irz,iry,irx,ilevel) &
+                  & + imag(wl_north(8)) * sh_inv_rot2(20,irz,iry,irx,ilevel) &
+                  & + real(wl_north(9)) * sh_inv_rot1(24,irz,iry,irx,ilevel) &
+                  & + imag(wl_north(9)) * sh_inv_rot2(24,irz,iry,irx,ilevel) &
+                  & + real(wl_north(10)) * sh_inv_rot1(28,irz,iry,irx,ilevel) &
+                  & + imag(wl_north(10)) * sh_inv_rot2(28,irz,iry,irx,ilevel)
+                ! j=3, p=2
+                wl_omp(9,icz0,icy0,icx0,iam) = wl_omp(9,icz0,icy0,icx0,iam) &
+                  & + real(wl_north(7)) * sh_inv_rot1(17,irz,iry,irx,ilevel) &
+                  & + imag(wl_north(7)) * sh_inv_rot2(17,irz,iry,irx,ilevel) &
+                  & + real(wl_north(8)) * sh_inv_rot1(21,irz,iry,irx,ilevel) &
+                  & + imag(wl_north(8)) * sh_inv_rot2(21,irz,iry,irx,ilevel) &
+                  & + real(wl_north(9)) * sh_inv_rot1(25,irz,iry,irx,ilevel) &
+                  & + imag(wl_north(9)) * sh_inv_rot2(25,irz,iry,irx,ilevel) &
+                  & + real(wl_north(10)) * sh_inv_rot1(29,irz,iry,irx,ilevel) &
+                  & + imag(wl_north(10)) * sh_inv_rot2(29,irz,iry,irx,ilevel)
+                ! j=3, p=3
+                wl_omp(10,icz0,icy0,icx0,iam) = wl_omp(10,icz0,icy0,icx0,iam) &
+                  & + real(wl_north(7)) * sh_inv_rot1(18,irz,iry,irx,ilevel) &
+                  & + imag(wl_north(7)) * sh_inv_rot2(18,irz,iry,irx,ilevel) &
+                  & + real(wl_north(8)) * sh_inv_rot1(22,irz,iry,irx,ilevel) &
+                  & + imag(wl_north(8)) * sh_inv_rot2(22,irz,iry,irx,ilevel) &
+                  & + real(wl_north(9)) * sh_inv_rot1(26,irz,iry,irx,ilevel) &
+                  & + imag(wl_north(9)) * sh_inv_rot2(26,irz,iry,irx,ilevel) &
+                  & + real(wl_north(10)) * sh_inv_rot1(30,irz,iry,irx,ilevel) &
+                  & + imag(wl_north(10)) * sh_inv_rot2(30,irz,iry,irx,ilevel)
+                ! j=4, p=0
+                wl_omp(11,icz0,icy0,icx0,iam) = wl_omp(11,icz0,icy0,icx0,iam) &
+                  & + real(wl_north(11)) * sh_inv_rot1(31,irz,iry,irx,ilevel) &
+                  & + imag(wl_north(11)) * sh_inv_rot2(31,irz,iry,irx,ilevel) &
+                  & + real(wl_north(12)) * sh_inv_rot1(36,irz,iry,irx,ilevel) &
+                  & + imag(wl_north(12)) * sh_inv_rot2(36,irz,iry,irx,ilevel) &
+                  & + real(wl_north(13)) * sh_inv_rot1(41,irz,iry,irx,ilevel) &
+                  & + imag(wl_north(13)) * sh_inv_rot2(41,irz,iry,irx,ilevel) &
+                  & + real(wl_north(14)) * sh_inv_rot1(46,irz,iry,irx,ilevel) &
+                  & + imag(wl_north(14)) * sh_inv_rot2(46,irz,iry,irx,ilevel) &
+                  & + real(wl_north(15)) * sh_inv_rot1(51,irz,iry,irx,ilevel) &
+                  & + imag(wl_north(15)) * sh_inv_rot2(51,irz,iry,irx,ilevel)
+                ! j=4, p=1
+                wl_omp(12,icz0,icy0,icx0,iam) = wl_omp(12,icz0,icy0,icx0,iam) &
+                  & + real(wl_north(11)) * sh_inv_rot1(32,irz,iry,irx,ilevel) &
+                  & + imag(wl_north(11)) * sh_inv_rot2(32,irz,iry,irx,ilevel) &
+                  & + real(wl_north(12)) * sh_inv_rot1(37,irz,iry,irx,ilevel) &
+                  & + imag(wl_north(12)) * sh_inv_rot2(37,irz,iry,irx,ilevel) &
+                  & + real(wl_north(13)) * sh_inv_rot1(42,irz,iry,irx,ilevel) &
+                  & + imag(wl_north(13)) * sh_inv_rot2(42,irz,iry,irx,ilevel) &
+                  & + real(wl_north(14)) * sh_inv_rot1(47,irz,iry,irx,ilevel) &
+                  & + imag(wl_north(14)) * sh_inv_rot2(47,irz,iry,irx,ilevel) &
+                  & + real(wl_north(15)) * sh_inv_rot1(52,irz,iry,irx,ilevel) &
+                  & + imag(wl_north(15)) * sh_inv_rot2(52,irz,iry,irx,ilevel)
+                ! j=4, p=2
+                wl_omp(13,icz0,icy0,icx0,iam) = wl_omp(13,icz0,icy0,icx0,iam) &
+                  & + real(wl_north(11)) * sh_inv_rot1(33,irz,iry,irx,ilevel) &
+                  & + imag(wl_north(11)) * sh_inv_rot2(33,irz,iry,irx,ilevel) &
+                  & + real(wl_north(12)) * sh_inv_rot1(38,irz,iry,irx,ilevel) &
+                  & + imag(wl_north(12)) * sh_inv_rot2(38,irz,iry,irx,ilevel) &
+                  & + real(wl_north(13)) * sh_inv_rot1(43,irz,iry,irx,ilevel) &
+                  & + imag(wl_north(13)) * sh_inv_rot2(43,irz,iry,irx,ilevel) &
+                  & + real(wl_north(14)) * sh_inv_rot1(48,irz,iry,irx,ilevel) &
+                  & + imag(wl_north(14)) * sh_inv_rot2(48,irz,iry,irx,ilevel) &
+                  & + real(wl_north(15)) * sh_inv_rot1(53,irz,iry,irx,ilevel) &
+                  & + imag(wl_north(15)) * sh_inv_rot2(53,irz,iry,irx,ilevel)
+                ! j=4, p=3
+                wl_omp(14,icz0,icy0,icx0,iam) = wl_omp(14,icz0,icy0,icx0,iam) &
+                  & + real(wl_north(11)) * sh_inv_rot1(34,irz,iry,irx,ilevel) &
+                  & + imag(wl_north(11)) * sh_inv_rot2(34,irz,iry,irx,ilevel) &
+                  & + real(wl_north(12)) * sh_inv_rot1(39,irz,iry,irx,ilevel) &
+                  & + imag(wl_north(12)) * sh_inv_rot2(39,irz,iry,irx,ilevel) &
+                  & + real(wl_north(13)) * sh_inv_rot1(44,irz,iry,irx,ilevel) &
+                  & + imag(wl_north(13)) * sh_inv_rot2(44,irz,iry,irx,ilevel) &
+                  & + real(wl_north(14)) * sh_inv_rot1(49,irz,iry,irx,ilevel) &
+                  & + imag(wl_north(14)) * sh_inv_rot2(49,irz,iry,irx,ilevel) &
+                  & + real(wl_north(15)) * sh_inv_rot1(54,irz,iry,irx,ilevel) &
+                  & + imag(wl_north(15)) * sh_inv_rot2(54,irz,iry,irx,ilevel)
+                ! j=4, p=4
+                wl_omp(15,icz0,icy0,icx0,iam) = wl_omp(15,icz0,icy0,icx0,iam) &
+                  & + real(wl_north(11)) * sh_inv_rot1(35,irz,iry,irx,ilevel) &
+                  & + imag(wl_north(11)) * sh_inv_rot2(35,irz,iry,irx,ilevel) &
+                  & + real(wl_north(12)) * sh_inv_rot1(40,irz,iry,irx,ilevel) &
+                  & + imag(wl_north(12)) * sh_inv_rot2(40,irz,iry,irx,ilevel) &
+                  & + real(wl_north(13)) * sh_inv_rot1(45,irz,iry,irx,ilevel) &
+                  & + imag(wl_north(13)) * sh_inv_rot2(45,irz,iry,irx,ilevel) &
+                  & + real(wl_north(14)) * sh_inv_rot1(50,irz,iry,irx,ilevel) &
+                  & + imag(wl_north(14)) * sh_inv_rot2(50,irz,iry,irx,ilevel) &
+                  & + real(wl_north(15)) * sh_inv_rot1(55,irz,iry,irx,ilevel) &
+                  & + imag(wl_north(15)) * sh_inv_rot2(55,irz,iry,irx,ilevel)

@@ -1,0 +1,57 @@
+<output> 
+  ascii=yes
+  dcd=yes
+  <trajectory> start=0 interval=1010 </trajectory> 
+  <trjdcd> start=0 interval=1010 </trjdcd> 
+  <restart> start=0 interval=1010 </restart> 
+  <monitor> start=0 interval=1 </monitor> 
+</output> 
+<randomseed> seed=1235 </randomseed> 
+<condition> 
+  dt=1.0e-15     # [sec]
+  ensemble=npt_a  # opt/nve/nvt/npt_a/npt_pr 
+# velocity_scaling = yes # nve only
+# maxwell_velocities=yes
+  steps=1010
+  temperature=423.150000   # [K]
+  pressure=101325.000000   # [Pa]
+  <respa>
+    style=XI   # XO/XI (shake+XO+npt not work)
+    nstep_skip_middle=1
+    nstep_skip_long  =1  
+    Pref_inner =  1.01325E+05  # virtual P for inner loop
+    Pref_outer =  0.00000E+05  # virtual P for outer loop
+  </respa>
+</condition> 
+<mpi>
+  division=auto  # manual/auto
+# division=manual  # manual/auto
+# nxdiv=16       # omitted, when division=auto
+# nydiv=8        # omitted, when division=auto
+# nzdiv=16       # omitted, when division=auto
+</mpi>
+<shake> 
+  maxiteration=1000000 
+  shake_tolerance=1.000000e-08   # relative value
+</shake> 
+<thermostat>
+ tau_Q=0.500000e-12 # [sec]
+ initialize=no     # yes/no
+</thermostat>
+<barostat>
+ tau_Q=0.500000e-12 # [sec]
+ tau_W=1.000000e-12 # [sec]
+ initialize=no     # yes/no
+</barostat> 
+<periodic> 
+  <force> 
+    cutoff=12.000000    #  [A]
+    LJcorrection=yes
+  </force> 
+ type=cmm   # cluster/simple/ewald/pmewald/cmm
+ <cmm> 
+   nmax=4     # Degree of FMM expansion
+   ULswitch=0
+   ncell=8
+  </cmm>
+</periodic> 

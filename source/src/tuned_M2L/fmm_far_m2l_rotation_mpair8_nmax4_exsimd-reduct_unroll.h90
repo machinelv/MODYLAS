@@ -1,0 +1,2136 @@
+!----------------------------------------------------------------------
+!MODYLAS ver. 1.1.0 
+!
+!Copyright (c) 2014-2019 Nagoya University
+!              2020-2023 The University of Tokyo
+!
+!Released under the MIT license.
+!see https://opensource.org/licenses/MIT
+!----------------------------------------------------------------------
+!MODYLAS Developers:
+!Yoshimichi Andoh, Kazushi Fujimoto, Tatsuya Sakashita, Noriyuki Yoshii, 
+!Zhiye Tang, Jiachao Zhang, Yuta Asano, Ryo Urano, Tetsuro Nagai, 
+!Atsushi Yamada, Hidekazu Kojima, Kensuke Iwahashi, Fumiyasu Mizutani, 
+!Shin-ichi Ichikawa, and Susumu Okazaki.
+!----------------------------------------------------------------------
+!    integer :: k,p
+!    integer :: m1
+!    real(4) :: shml_n0, shml_n1, shml_n2, shml_n3, shml_n4
+!    real(4) :: tmp_ce_r, tmp_ce_i
+!    real(4) :: shrot1_q0_r, shrot1_q0_i, shrot2_q0_r, shrot2_q0_i
+!    real(4) :: shrot1_q1_r, shrot1_q1_i, shrot2_q1_r, shrot2_q1_i
+!    real(4) :: shrot1_q2_r, shrot1_q2_i, shrot2_q2_r, shrot2_q2_i
+!    real(4) :: shrot1_q3_r, shrot1_q3_i, shrot2_q3_r, shrot2_q3_i
+!    real(4) :: shrot1_q4_r, shrot1_q4_i, shrot2_q4_r, shrot2_q4_i
+!    real(4) :: shinvrot1_q0_r, shinvrot1_q0_i, shinvrot2_q0_r, shinvrot2_q0_i
+!    real(4) :: shinvrot1_q1_r, shinvrot1_q1_i, shinvrot2_q1_r, shinvrot2_q1_i
+!    real(4) :: shinvrot1_q2_r, shinvrot1_q2_i, shinvrot2_q2_r, shinvrot2_q2_i
+!    real(4) :: shinvrot1_q3_r, shinvrot1_q3_i, shinvrot2_q3_r, shinvrot2_q3_i
+!    real(4) :: shinvrot1_q4_r, shinvrot1_q4_i, shinvrot2_q4_r, shinvrot2_q4_i
+!    real(4) :: wwm_north(lm_length,2,8), wwl_north(lm_length,2,8)
+!    real(4) :: wm_q0_1r, wm_q0_1i, wm_q0_2r, wm_q0_2i, wm_q0_3r, wm_q0_3i, wm_q0_4r, wm_q0_4i
+!    real(4) :: wm_q1_1r, wm_q1_1i, wm_q1_2r, wm_q1_2i, wm_q1_3r, wm_q1_3i, wm_q1_4r, wm_q1_4i
+!    real(4) :: wm_q2_1r, wm_q2_1i, wm_q2_2r, wm_q2_2i, wm_q2_3r, wm_q2_3i, wm_q2_4r, wm_q2_4i
+!    real(4) :: wm_q3_1r, wm_q3_1i, wm_q3_2r, wm_q3_2i, wm_q3_3r, wm_q3_3i, wm_q3_4r, wm_q3_4i
+!    real(4) :: wm_q4_1r, wm_q4_1i, wm_q4_2r, wm_q4_2i, wm_q4_3r, wm_q4_3i, wm_q4_4r, wm_q4_4i
+!    real(4) :: wm_q0_5r, wm_q0_5i, wm_q0_6r, wm_q0_6i, wm_q0_7r, wm_q0_7i, wm_q0_8r, wm_q0_8i
+!    real(4) :: wm_q1_5r, wm_q1_5i, wm_q1_6r, wm_q1_6i, wm_q1_7r, wm_q1_7i, wm_q1_8r, wm_q1_8i
+!    real(4) :: wm_q2_5r, wm_q2_5i, wm_q2_6r, wm_q2_6i, wm_q2_7r, wm_q2_7i, wm_q2_8r, wm_q2_8i
+!    real(4) :: wm_q3_5r, wm_q3_5i, wm_q3_6r, wm_q3_6i, wm_q3_7r, wm_q3_7i, wm_q3_8r, wm_q3_8i
+!    real(4) :: wm_q4_5r, wm_q4_5i, wm_q4_6r, wm_q4_6i, wm_q4_7r, wm_q4_7i, wm_q4_8r, wm_q4_8i
+!    real(4) :: wlnorth_q0_1r, wlnorth_q0_1i, wlnorth_q0_2r, wlnorth_q0_2i, wlnorth_q0_3r, wlnorth_q0_3i, wlnorth_q0_4r, wlnorth_q0_4i
+!    real(4) :: wlnorth_q1_1r, wlnorth_q1_1i, wlnorth_q1_2r, wlnorth_q1_2i, wlnorth_q1_3r, wlnorth_q1_3i, wlnorth_q1_4r, wlnorth_q1_4i
+!    real(4) :: wlnorth_q2_1r, wlnorth_q2_1i, wlnorth_q2_2r, wlnorth_q2_2i, wlnorth_q2_3r, wlnorth_q2_3i, wlnorth_q2_4r, wlnorth_q2_4i
+!    real(4) :: wlnorth_q3_1r, wlnorth_q3_1i, wlnorth_q3_2r, wlnorth_q3_2i, wlnorth_q3_3r, wlnorth_q3_3i, wlnorth_q3_4r, wlnorth_q3_4i
+!    real(4) :: wlnorth_q4_1r, wlnorth_q4_1i, wlnorth_q4_2r, wlnorth_q4_2i, wlnorth_q4_3r, wlnorth_q4_3i, wlnorth_q4_4r, wlnorth_q4_4i
+!    real(4) :: wlnorth_q0_5r, wlnorth_q0_5i, wlnorth_q0_6r, wlnorth_q0_6i, wlnorth_q0_7r, wlnorth_q0_7i, wlnorth_q0_8r, wlnorth_q0_8i
+!    real(4) :: wlnorth_q1_5r, wlnorth_q1_5i, wlnorth_q1_6r, wlnorth_q1_6i, wlnorth_q1_7r, wlnorth_q1_7i, wlnorth_q1_8r, wlnorth_q1_8i
+!    real(4) :: wlnorth_q2_5r, wlnorth_q2_5i, wlnorth_q2_6r, wlnorth_q2_6i, wlnorth_q2_7r, wlnorth_q2_7i, wlnorth_q2_8r, wlnorth_q2_8i
+!    real(4) :: wlnorth_q3_5r, wlnorth_q3_5i, wlnorth_q3_6r, wlnorth_q3_6i, wlnorth_q3_7r, wlnorth_q3_7i, wlnorth_q3_8r, wlnorth_q3_8i
+!    real(4) :: wlnorth_q4_5r, wlnorth_q4_5i, wlnorth_q4_6r, wlnorth_q4_6i, wlnorth_q4_7r, wlnorth_q4_7i, wlnorth_q4_8r, wlnorth_q4_8i
+!    real(4) :: tmp_1r, tmp_1i, tmp_2r, tmp_2i, tmp_3r, tmp_3i, tmp_4r, tmp_4i
+!    real(4) :: tmp_5r, tmp_5i, tmp_6r, tmp_6i, tmp_7r, tmp_7i, tmp_8r, tmp_8i
+
+!  !$omp& private(k,p, m1, tmp_ce_r, tmp_ce_i) &
+!  !$omp& private(shml_n0, shml_n1, shml_n2, shml_n3, shml_n4) &
+!  !$omp& private(wm_q0_1r, wm_q0_2r, wm_q0_3r, wm_q0_4r, wm_q0_5r, wm_q0_6r, wm_q0_7r, wm_q0_8r) &
+!  !$omp& private(wm_q0_1i, wm_q0_2i, wm_q0_3i, wm_q0_4i, wm_q0_5i, wm_q0_6i, wm_q0_7i, wm_q0_8i) &
+!  !$omp& private(wm_q1_1r, wm_q1_2r, wm_q1_3r, wm_q1_4r, wm_q1_5r, wm_q1_6r, wm_q1_7r, wm_q1_8r) &
+!  !$omp& private(wm_q1_1i, wm_q1_2i, wm_q1_3i, wm_q1_4i, wm_q1_5i, wm_q1_6i, wm_q1_7i, wm_q1_8i) &
+!  !$omp& private(wm_q2_1r, wm_q2_2r, wm_q2_3r, wm_q2_4r, wm_q2_5r, wm_q2_6r, wm_q2_7r, wm_q2_8r) &
+!  !$omp& private(wm_q2_1i, wm_q2_2i, wm_q2_3i, wm_q2_4i, wm_q2_5i, wm_q2_6i, wm_q2_7i, wm_q2_8i) &
+!  !$omp& private(wm_q3_1r, wm_q3_2r, wm_q3_3r, wm_q3_4r, wm_q3_5r, wm_q3_6r, wm_q3_7r, wm_q3_8r) &
+!  !$omp& private(wm_q3_1i, wm_q3_2i, wm_q3_3i, wm_q3_4i, wm_q3_5i, wm_q3_6i, wm_q3_7i, wm_q3_8i) &
+!  !$omp& private(wm_q4_1r, wm_q4_2r, wm_q4_3r, wm_q4_4r, wm_q4_5r, wm_q4_6r, wm_q4_7r, wm_q4_8r) &
+!  !$omp& private(wm_q4_1i, wm_q4_2i, wm_q4_3i, wm_q4_4i, wm_q4_5i, wm_q4_6i, wm_q4_7i, wm_q4_8i) &
+!  !$omp& private(shrot1_q0_r, shrot1_q0_i, shrot2_q0_r, shrot2_q0_i) &
+!  !$omp& private(shrot1_q1_r, shrot1_q1_i, shrot2_q1_r, shrot2_q1_i) &
+!  !$omp& private(shrot1_q2_r, shrot1_q2_i, shrot2_q2_r, shrot2_q2_i) &
+!  !$omp& private(shrot1_q3_r, shrot1_q3_i, shrot2_q3_r, shrot2_q3_i) &
+!  !$omp& private(shrot1_q4_r, shrot1_q4_i, shrot2_q4_r, shrot2_q4_i) &
+!  !$omp& private(shinvrot1_q0_r, shinvrot1_q0_i, shinvrot2_q0_r, shinvrot2_q0_i) &
+!  !$omp& private(shinvrot1_q1_r, shinvrot1_q1_i, shinvrot2_q1_r, shinvrot2_q1_i) &
+!  !$omp& private(shinvrot1_q2_r, shinvrot1_q2_i, shinvrot2_q2_r, shinvrot2_q2_i) &
+!  !$omp& private(shinvrot1_q3_r, shinvrot1_q3_i, shinvrot2_q3_r, shinvrot2_q3_i) &
+!  !$omp& private(shinvrot1_q4_r, shinvrot1_q4_i, shinvrot2_q4_r, shinvrot2_q4_i) &
+!  !$omp& private(wlnorth_q0_1r, wlnorth_q0_1i, wlnorth_q0_2r, wlnorth_q0_2i, wlnorth_q0_3r, wlnorth_q0_3i, wlnorth_q0_4r, wlnorth_q0_4i) &
+!  !$omp& private(wlnorth_q1_1r, wlnorth_q1_1i, wlnorth_q1_2r, wlnorth_q1_2i, wlnorth_q1_3r, wlnorth_q1_3i, wlnorth_q1_4r, wlnorth_q1_4i) &
+!  !$omp& private(wlnorth_q2_1r, wlnorth_q2_1i, wlnorth_q2_2r, wlnorth_q2_2i, wlnorth_q2_3r, wlnorth_q2_3i, wlnorth_q2_4r, wlnorth_q2_4i) &
+!  !$omp& private(wlnorth_q3_1r, wlnorth_q3_1i, wlnorth_q3_2r, wlnorth_q3_2i, wlnorth_q3_3r, wlnorth_q3_3i, wlnorth_q3_4r, wlnorth_q3_4i) &
+!  !$omp& private(wlnorth_q4_1r, wlnorth_q4_1i, wlnorth_q4_2r, wlnorth_q4_2i, wlnorth_q4_3r, wlnorth_q4_3i, wlnorth_q4_4r, wlnorth_q4_4i) &
+!  !$omp& private(wlnorth_q0_5r, wlnorth_q0_5i, wlnorth_q0_6r, wlnorth_q0_6i, wlnorth_q0_7r, wlnorth_q0_7i, wlnorth_q0_8r, wlnorth_q0_8i) &
+!  !$omp& private(wlnorth_q1_5r, wlnorth_q1_5i, wlnorth_q1_6r, wlnorth_q1_6i, wlnorth_q1_7r, wlnorth_q1_7i, wlnorth_q1_8r, wlnorth_q1_8i) &
+!  !$omp& private(wlnorth_q2_5r, wlnorth_q2_5i, wlnorth_q2_6r, wlnorth_q2_6i, wlnorth_q2_7r, wlnorth_q2_7i, wlnorth_q2_8r, wlnorth_q2_8i) &
+!  !$omp& private(wlnorth_q3_5r, wlnorth_q3_5i, wlnorth_q3_6r, wlnorth_q3_6i, wlnorth_q3_7r, wlnorth_q3_7i, wlnorth_q3_8r, wlnorth_q3_8i) &
+!  !$omp& private(wlnorth_q4_5r, wlnorth_q4_5i, wlnorth_q4_6r, wlnorth_q4_6i, wlnorth_q4_7r, wlnorth_q4_7i, wlnorth_q4_8r, wlnorth_q4_8i) &
+!  !$omp& private(tmp_1r, tmp_1i, tmp_2r, tmp_2i, tmp_3r, tmp_3i, tmp_4r, tmp_4i) &
+!  !$omp& private(tmp_5r, tmp_5i, tmp_6r, tmp_6i, tmp_7r, tmp_7i, tmp_8r, tmp_8i) &
+
+
+! SIMD loop type code. For an use of transposed rotation matrix for each J as an input.
+! Purpose is to avoid reduction within SIMD to decrease instruction and local recurrence.
+! Another purpose is to reduce load/store by making outer loop unrolled.
+!
+! Drawback is poor parallelism of instruction. But the outer-loop unrolled code will have 
+! more instruction level parallelism.
+! S. Ichikawa, Jan 2019.
+
+!    integer :: j,k,n,p,q, ind_1dim
+!    integer :: m1,m2
+!    integer :: m2_b
+!    integer :: ind_1dim_b
+!    real(4) :: tmp_shml, tmp_ce_r, tmp_ce_i
+!---- Outer Reduction Loop Type Rolled Code.
+!                  wm_north = Czero
+!                  wl_north = Czero
+!
+!                  ! Direct rotation
+!                  do j=0,nmax                  ! parallel loop.
+!                     m2_b = j*(j+1)/2 + 1               ! translating the indices (j,q) to 1-dim index
+!                     ind_1dim_b = j*(j+1)*(2*j+1)/6 + 1 ! translating the indices (j,p,q) to 1-dim index
+!                     do q=0,j                  ! reduction loop.
+!                        m2 = m2_b + q                   ! translating the indices (j,q) to 1-dim index
+!                        ind_1dim = ind_1dim_b + (j+1)*q ! translating the indices (j,p,q) to 1-dim index
+!!ocl simd_redundant_vl(5)
+!                        do p=0,j               ! parallel loop.
+!                           m1 = m2_b + p                ! translating the indices (j,p) to 1-dim index
+!                           wm_north(m1,1) = wm_north(m1,1) &
+!                                & + wm(m2,1,icz1,icy1,icx1) * sh_rot1(ind_1dim+p,1,irz,iry,irx,ilevel) &
+!                                & + wm(m2,2,icz1,icy1,icx1) * sh_rot2(ind_1dim+p,1,irz,iry,irx,ilevel)
+!                           wm_north(m1,2) = wm_north(m1,2) &
+!                                & + wm(m2,1,icz1,icy1,icx1) * sh_rot1(ind_1dim+p,2,irz,iry,irx,ilevel) &
+!                                & + wm(m2,2,icz1,icy1,icx1) * sh_rot2(ind_1dim+p,2,irz,iry,irx,ilevel)
+!                        enddo
+!                     enddo
+!                  enddo
+!
+!                  ! M2L for z-axis
+!                  do j=0,nmax
+!                     do n=0,nmax
+!                        tmp_shml = shml(j+n,irz,iry,irx,ilevel)
+!                        m1 = j*(j+1)/2 + 1 + 0
+!                        m2 = n*(n+1)/2 + 1 + 0
+!!ocl simd_redundant_vl(5)
+!                        do k=0,min(j,n)
+!                          wl_north(m1+k,1) = wl_north(m1+k,1) + wm_north(m2+k,1) * tmp_shml
+!                          wl_north(m1+k,2) = wl_north(m1+k,2) + wm_north(m2+k,2) * tmp_shml
+!                        enddo
+!                     enddo
+!                  enddo
+!
+!                  ! Inverse rotation
+!                  do j=0,nmax                  ! parallel loop.
+!                     m2_b = j*(j+1)/2 + 1               ! translating the indices (j,q) to 1-dim index
+!                     ind_1dim_b = j*(j+1)*(2*j+1)/6 + 1 ! translating the indices (j,p,q) to 1-dim index
+!                     do q=0,j                  ! reduction loop.
+!                        m2 = m2_b + q                   ! translating the indices (j,q) to 1-dim index
+!                        ind_1dim = ind_1dim_b + (j+1)*q ! translating the indices (j,p,q) to 1-dim index
+!!ocl simd_redundant_vl(5)
+!                        do p=0,j               ! parallel loop.
+!                           m1 = m2_b + p                ! translating the indices (j,p) to 1-dim index
+!                           tmp_ce_r = &
+!                                & + wl_north(m2,1) * sh_inv_rot1(ind_1dim+p,1,irz,iry,irx,ilevel) &
+!                                & + wl_north(m2,2) * sh_inv_rot2(ind_1dim+p,1,irz,iry,irx,ilevel)
+!                           wl_omp(m1,1,icz0,icy0,icx0,iam) = wl_omp(m1,1,icz0,icy0,icx0,iam) + tmp_ce_r
+!                           tmp_ce_i = &
+!                                & + wl_north(m2,1) * sh_inv_rot1(ind_1dim+p,2,irz,iry,irx,ilevel) &
+!                                & + wl_north(m2,2) * sh_inv_rot2(ind_1dim+p,2,irz,iry,irx,ilevel)
+!                           wl_omp(m1,2,icz0,icy0,icx0,iam) = wl_omp(m1,2,icz0,icy0,icx0,iam) + tmp_ce_i
+!                        enddo
+!                     enddo
+!                  enddo
+!!---- end Outer Reduction Loop Type Rolled Code.
+
+                  wwm_north(:,:,1:8) = Czero
+                  wwl_north(:,:,1:8) = Czero
+
+                 !! Direct rotation
+                  ! j=0, m2_b=1, ind_1dim_b=1
+                        wm_q0_1r = wm( 1,1,icz1_1,icy1_1,icx1_1)
+                        wm_q0_1i = wm( 1,2,icz1_1,icy1_1,icx1_1)
+                        wm_q0_2r = wm( 1,1,icz1_2,icy1_2,icx1_2)
+                        wm_q0_2i = wm( 1,2,icz1_2,icy1_2,icx1_2)
+                        wm_q0_3r = wm( 1,1,icz1_3,icy1_3,icx1_3)
+                        wm_q0_3i = wm( 1,2,icz1_3,icy1_3,icx1_3)
+                        wm_q0_4r = wm( 1,1,icz1_4,icy1_4,icx1_4)
+                        wm_q0_4i = wm( 1,2,icz1_4,icy1_4,icx1_4)
+                        wm_q0_5r = wm( 1,1,icz1_5,icy1_5,icx1_5)
+                        wm_q0_5i = wm( 1,2,icz1_5,icy1_5,icx1_5)
+                        wm_q0_6r = wm( 1,1,icz1_6,icy1_6,icx1_6)
+                        wm_q0_6i = wm( 1,2,icz1_6,icy1_6,icx1_6)
+                        wm_q0_7r = wm( 1,1,icz1_7,icy1_7,icx1_7)
+                        wm_q0_7i = wm( 1,2,icz1_7,icy1_7,icx1_7)
+                        wm_q0_8r = wm( 1,1,icz1_8,icy1_8,icx1_8)
+                        wm_q0_8i = wm( 1,2,icz1_8,icy1_8,icx1_8)
+                        do p=0,0               ! parallel loop.
+                           m1 = 1 + p                ! translating the indices (j,p) to 1-dim index
+                           shrot1_q0_r = sh_rot1( 1+p,1,irz,iry,irx,ilevel)
+                           shrot1_q0_i = sh_rot1( 1+p,2,irz,iry,irx,ilevel)
+                           shrot2_q0_r = sh_rot2( 1+p,1,irz,iry,irx,ilevel)
+                           shrot2_q0_i = sh_rot2( 1+p,2,irz,iry,irx,ilevel)
+
+                           wwm_north(m1,1,1) = wwm_north(m1,1,1) + wm_q0_1r * shrot1_q0_r + wm_q0_1i * shrot2_q0_r
+                           wwm_north(m1,2,1) = wwm_north(m1,2,1) + wm_q0_1r * shrot1_q0_i + wm_q0_1i * shrot2_q0_i
+                           wwm_north(m1,1,2) = wwm_north(m1,1,2) + wm_q0_2r * shrot1_q0_r + wm_q0_2i * shrot2_q0_r
+                           wwm_north(m1,2,2) = wwm_north(m1,2,2) + wm_q0_2r * shrot1_q0_i + wm_q0_2i * shrot2_q0_i
+                           wwm_north(m1,1,3) = wwm_north(m1,1,3) + wm_q0_3r * shrot1_q0_r + wm_q0_3i * shrot2_q0_r
+                           wwm_north(m1,2,3) = wwm_north(m1,2,3) + wm_q0_3r * shrot1_q0_i + wm_q0_3i * shrot2_q0_i
+                           wwm_north(m1,1,4) = wwm_north(m1,1,4) + wm_q0_4r * shrot1_q0_r + wm_q0_4i * shrot2_q0_r
+                           wwm_north(m1,2,4) = wwm_north(m1,2,4) + wm_q0_4r * shrot1_q0_i + wm_q0_4i * shrot2_q0_i
+                           wwm_north(m1,1,5) = wwm_north(m1,1,5) + wm_q0_5r * shrot1_q0_r + wm_q0_5i * shrot2_q0_r
+                           wwm_north(m1,2,5) = wwm_north(m1,2,5) + wm_q0_5r * shrot1_q0_i + wm_q0_5i * shrot2_q0_i
+                           wwm_north(m1,1,6) = wwm_north(m1,1,6) + wm_q0_6r * shrot1_q0_r + wm_q0_6i * shrot2_q0_r
+                           wwm_north(m1,2,6) = wwm_north(m1,2,6) + wm_q0_6r * shrot1_q0_i + wm_q0_6i * shrot2_q0_i
+                           wwm_north(m1,1,7) = wwm_north(m1,1,7) + wm_q0_7r * shrot1_q0_r + wm_q0_7i * shrot2_q0_r
+                           wwm_north(m1,2,7) = wwm_north(m1,2,7) + wm_q0_7r * shrot1_q0_i + wm_q0_7i * shrot2_q0_i
+                           wwm_north(m1,1,8) = wwm_north(m1,1,8) + wm_q0_8r * shrot1_q0_r + wm_q0_8i * shrot2_q0_r
+                           wwm_north(m1,2,8) = wwm_north(m1,2,8) + wm_q0_8r * shrot1_q0_i + wm_q0_8i * shrot2_q0_i
+                        enddo
+
+                  ! j=1, m2_b=2, ind_1dim_b=2
+                        wm_q0_1r = wm( 2,1,icz1_1,icy1_1,icx1_1)
+                        wm_q0_1i = wm( 2,2,icz1_1,icy1_1,icx1_1)
+                        wm_q0_2r = wm( 2,1,icz1_2,icy1_2,icx1_2)
+                        wm_q0_2i = wm( 2,2,icz1_2,icy1_2,icx1_2)
+                        wm_q0_3r = wm( 2,1,icz1_3,icy1_3,icx1_3)
+                        wm_q0_3i = wm( 2,2,icz1_3,icy1_3,icx1_3)
+                        wm_q0_4r = wm( 2,1,icz1_4,icy1_4,icx1_4)
+                        wm_q0_4i = wm( 2,2,icz1_4,icy1_4,icx1_4)
+                        wm_q0_5r = wm( 2,1,icz1_5,icy1_5,icx1_5)
+                        wm_q0_5i = wm( 2,2,icz1_5,icy1_5,icx1_5)
+                        wm_q0_6r = wm( 2,1,icz1_6,icy1_6,icx1_6)
+                        wm_q0_6i = wm( 2,2,icz1_6,icy1_6,icx1_6)
+                        wm_q0_7r = wm( 2,1,icz1_7,icy1_7,icx1_7)
+                        wm_q0_7i = wm( 2,2,icz1_7,icy1_7,icx1_7)
+                        wm_q0_8r = wm( 2,1,icz1_8,icy1_8,icx1_8)
+                        wm_q0_8i = wm( 2,2,icz1_8,icy1_8,icx1_8)
+                        wm_q1_1r = wm( 3,1,icz1_1,icy1_1,icx1_1)
+                        wm_q1_1i = wm( 3,2,icz1_1,icy1_1,icx1_1)
+                        wm_q1_2r = wm( 3,1,icz1_2,icy1_2,icx1_2)
+                        wm_q1_2i = wm( 3,2,icz1_2,icy1_2,icx1_2)
+                        wm_q1_3r = wm( 3,1,icz1_3,icy1_3,icx1_3)
+                        wm_q1_3i = wm( 3,2,icz1_3,icy1_3,icx1_3)
+                        wm_q1_4r = wm( 3,1,icz1_4,icy1_4,icx1_4)
+                        wm_q1_4i = wm( 3,2,icz1_4,icy1_4,icx1_4)
+                        wm_q1_5r = wm( 3,1,icz1_5,icy1_5,icx1_5)
+                        wm_q1_5i = wm( 3,2,icz1_5,icy1_5,icx1_5)
+                        wm_q1_6r = wm( 3,1,icz1_6,icy1_6,icx1_6)
+                        wm_q1_6i = wm( 3,2,icz1_6,icy1_6,icx1_6)
+                        wm_q1_7r = wm( 3,1,icz1_7,icy1_7,icx1_7)
+                        wm_q1_7i = wm( 3,2,icz1_7,icy1_7,icx1_7)
+                        wm_q1_8r = wm( 3,1,icz1_8,icy1_8,icx1_8)
+                        wm_q1_8i = wm( 3,2,icz1_8,icy1_8,icx1_8)
+!ocl simd_redundant_vl(5)
+                        do p=0,1               ! parallel loop.
+                           m1 = 2 + p                ! translating the indices (j,p) to 1-dim index
+                           shrot1_q0_r = sh_rot1( 2+p,1,irz,iry,irx,ilevel)
+                           shrot1_q0_i = sh_rot1( 2+p,2,irz,iry,irx,ilevel)
+                           shrot2_q0_r = sh_rot2( 2+p,1,irz,iry,irx,ilevel)
+                           shrot2_q0_i = sh_rot2( 2+p,2,irz,iry,irx,ilevel)
+                           shrot1_q1_r = sh_rot1( 4+p,1,irz,iry,irx,ilevel)
+                           shrot1_q1_i = sh_rot1( 4+p,2,irz,iry,irx,ilevel)
+                           shrot2_q1_r = sh_rot2( 4+p,1,irz,iry,irx,ilevel)
+                           shrot2_q1_i = sh_rot2( 4+p,2,irz,iry,irx,ilevel)
+
+                           wwm_north(m1,1,1) = wwm_north(m1,1,1) + wm_q0_1r * shrot1_q0_r + wm_q0_1i * shrot2_q0_r &
+                                             &                   + wm_q1_1r * shrot1_q1_r + wm_q1_1i * shrot2_q1_r
+                           wwm_north(m1,2,1) = wwm_north(m1,2,1) + wm_q0_1r * shrot1_q0_i + wm_q0_1i * shrot2_q0_i &
+                                             &                   + wm_q1_1r * shrot1_q1_i + wm_q1_1i * shrot2_q1_i
+                           wwm_north(m1,1,2) = wwm_north(m1,1,2) + wm_q0_2r * shrot1_q0_r + wm_q0_2i * shrot2_q0_r &
+                                             &                   + wm_q1_2r * shrot1_q1_r + wm_q1_2i * shrot2_q1_r
+                           wwm_north(m1,2,2) = wwm_north(m1,2,2) + wm_q0_2r * shrot1_q0_i + wm_q0_2i * shrot2_q0_i &
+                                             &                   + wm_q1_2r * shrot1_q1_i + wm_q1_2i * shrot2_q1_i
+                           wwm_north(m1,1,3) = wwm_north(m1,1,3) + wm_q0_3r * shrot1_q0_r + wm_q0_3i * shrot2_q0_r &
+                                             &                   + wm_q1_3r * shrot1_q1_r + wm_q1_3i * shrot2_q1_r
+                           wwm_north(m1,2,3) = wwm_north(m1,2,3) + wm_q0_3r * shrot1_q0_i + wm_q0_3i * shrot2_q0_i &
+                                             &                   + wm_q1_3r * shrot1_q1_i + wm_q1_3i * shrot2_q1_i
+                           wwm_north(m1,1,4) = wwm_north(m1,1,4) + wm_q0_4r * shrot1_q0_r + wm_q0_4i * shrot2_q0_r &
+                                             &                   + wm_q1_4r * shrot1_q1_r + wm_q1_4i * shrot2_q1_r
+                           wwm_north(m1,2,4) = wwm_north(m1,2,4) + wm_q0_4r * shrot1_q0_i + wm_q0_4i * shrot2_q0_i &
+                                             &                   + wm_q1_4r * shrot1_q1_i + wm_q1_4i * shrot2_q1_i
+                           wwm_north(m1,1,5) = wwm_north(m1,1,5) + wm_q0_5r * shrot1_q0_r + wm_q0_5i * shrot2_q0_r &
+                                             &                   + wm_q1_5r * shrot1_q1_r + wm_q1_5i * shrot2_q1_r
+                           wwm_north(m1,2,5) = wwm_north(m1,2,5) + wm_q0_5r * shrot1_q0_i + wm_q0_5i * shrot2_q0_i &
+                                             &                   + wm_q1_5r * shrot1_q1_i + wm_q1_5i * shrot2_q1_i
+                           wwm_north(m1,1,6) = wwm_north(m1,1,6) + wm_q0_6r * shrot1_q0_r + wm_q0_6i * shrot2_q0_r &
+                                             &                   + wm_q1_6r * shrot1_q1_r + wm_q1_6i * shrot2_q1_r
+                           wwm_north(m1,2,6) = wwm_north(m1,2,6) + wm_q0_6r * shrot1_q0_i + wm_q0_6i * shrot2_q0_i &
+                                             &                   + wm_q1_6r * shrot1_q1_i + wm_q1_6i * shrot2_q1_i
+                           wwm_north(m1,1,7) = wwm_north(m1,1,7) + wm_q0_7r * shrot1_q0_r + wm_q0_7i * shrot2_q0_r &
+                                             &                   + wm_q1_7r * shrot1_q1_r + wm_q1_7i * shrot2_q1_r
+                           wwm_north(m1,2,7) = wwm_north(m1,2,7) + wm_q0_7r * shrot1_q0_i + wm_q0_7i * shrot2_q0_i &
+                                             &                   + wm_q1_7r * shrot1_q1_i + wm_q1_7i * shrot2_q1_i
+                           wwm_north(m1,1,8) = wwm_north(m1,1,8) + wm_q0_8r * shrot1_q0_r + wm_q0_8i * shrot2_q0_r &
+                                             &                   + wm_q1_8r * shrot1_q1_r + wm_q1_8i * shrot2_q1_r
+                           wwm_north(m1,2,8) = wwm_north(m1,2,8) + wm_q0_8r * shrot1_q0_i + wm_q0_8i * shrot2_q0_i &
+                                             &                   + wm_q1_8r * shrot1_q1_i + wm_q1_8i * shrot2_q1_i
+                        enddo
+
+                  ! j=2, m2_b=4, ind_1dim_b=6
+                        wm_q0_1r = wm( 4,1,icz1_1,icy1_1,icx1_1)
+                        wm_q0_1i = wm( 4,2,icz1_1,icy1_1,icx1_1)
+                        wm_q0_2r = wm( 4,1,icz1_2,icy1_2,icx1_2)
+                        wm_q0_2i = wm( 4,2,icz1_2,icy1_2,icx1_2)
+                        wm_q0_3r = wm( 4,1,icz1_3,icy1_3,icx1_3)
+                        wm_q0_3i = wm( 4,2,icz1_3,icy1_3,icx1_3)
+                        wm_q0_4r = wm( 4,1,icz1_4,icy1_4,icx1_4)
+                        wm_q0_4i = wm( 4,2,icz1_4,icy1_4,icx1_4)
+                        wm_q0_5r = wm( 4,1,icz1_5,icy1_5,icx1_5)
+                        wm_q0_5i = wm( 4,2,icz1_5,icy1_5,icx1_5)
+                        wm_q0_6r = wm( 4,1,icz1_6,icy1_6,icx1_6)
+                        wm_q0_6i = wm( 4,2,icz1_6,icy1_6,icx1_6)
+                        wm_q0_7r = wm( 4,1,icz1_7,icy1_7,icx1_7)
+                        wm_q0_7i = wm( 4,2,icz1_7,icy1_7,icx1_7)
+                        wm_q0_8r = wm( 4,1,icz1_8,icy1_8,icx1_8)
+                        wm_q0_8i = wm( 4,2,icz1_8,icy1_8,icx1_8)
+                        wm_q1_1r = wm( 5,1,icz1_1,icy1_1,icx1_1)
+                        wm_q1_1i = wm( 5,2,icz1_1,icy1_1,icx1_1)
+                        wm_q1_2r = wm( 5,1,icz1_2,icy1_2,icx1_2)
+                        wm_q1_2i = wm( 5,2,icz1_2,icy1_2,icx1_2)
+                        wm_q1_3r = wm( 5,1,icz1_3,icy1_3,icx1_3)
+                        wm_q1_3i = wm( 5,2,icz1_3,icy1_3,icx1_3)
+                        wm_q1_4r = wm( 5,1,icz1_4,icy1_4,icx1_4)
+                        wm_q1_4i = wm( 5,2,icz1_4,icy1_4,icx1_4)
+                        wm_q1_5r = wm( 5,1,icz1_5,icy1_5,icx1_5)
+                        wm_q1_5i = wm( 5,2,icz1_5,icy1_5,icx1_5)
+                        wm_q1_6r = wm( 5,1,icz1_6,icy1_6,icx1_6)
+                        wm_q1_6i = wm( 5,2,icz1_6,icy1_6,icx1_6)
+                        wm_q1_7r = wm( 5,1,icz1_7,icy1_7,icx1_7)
+                        wm_q1_7i = wm( 5,2,icz1_7,icy1_7,icx1_7)
+                        wm_q1_8r = wm( 5,1,icz1_8,icy1_8,icx1_8)
+                        wm_q1_8i = wm( 5,2,icz1_8,icy1_8,icx1_8)
+                        wm_q2_1r = wm( 6,1,icz1_1,icy1_1,icx1_1)
+                        wm_q2_1i = wm( 6,2,icz1_1,icy1_1,icx1_1)
+                        wm_q2_2r = wm( 6,1,icz1_2,icy1_2,icx1_2)
+                        wm_q2_2i = wm( 6,2,icz1_2,icy1_2,icx1_2)
+                        wm_q2_3r = wm( 6,1,icz1_3,icy1_3,icx1_3)
+                        wm_q2_3i = wm( 6,2,icz1_3,icy1_3,icx1_3)
+                        wm_q2_4r = wm( 6,1,icz1_4,icy1_4,icx1_4)
+                        wm_q2_4i = wm( 6,2,icz1_4,icy1_4,icx1_4)
+                        wm_q2_5r = wm( 6,1,icz1_5,icy1_5,icx1_5)
+                        wm_q2_5i = wm( 6,2,icz1_5,icy1_5,icx1_5)
+                        wm_q2_6r = wm( 6,1,icz1_6,icy1_6,icx1_6)
+                        wm_q2_6i = wm( 6,2,icz1_6,icy1_6,icx1_6)
+                        wm_q2_7r = wm( 6,1,icz1_7,icy1_7,icx1_7)
+                        wm_q2_7i = wm( 6,2,icz1_7,icy1_7,icx1_7)
+                        wm_q2_8r = wm( 6,1,icz1_8,icy1_8,icx1_8)
+                        wm_q2_8i = wm( 6,2,icz1_8,icy1_8,icx1_8)
+
+!ocl simd_redundant_vl(5)
+                        do p=0,2               ! parallel loop.
+                           m1 = 4 + p                ! translating the indices (j,p) to 1-dim index
+                           shrot1_q0_r = sh_rot1( 6+p,1,irz,iry,irx,ilevel)
+                           shrot1_q0_i = sh_rot1( 6+p,2,irz,iry,irx,ilevel)
+                           shrot2_q0_r = sh_rot2( 6+p,1,irz,iry,irx,ilevel)
+                           shrot2_q0_i = sh_rot2( 6+p,2,irz,iry,irx,ilevel)
+                           shrot1_q1_r = sh_rot1( 9+p,1,irz,iry,irx,ilevel)
+                           shrot1_q1_i = sh_rot1( 9+p,2,irz,iry,irx,ilevel)
+                           shrot2_q1_r = sh_rot2( 9+p,1,irz,iry,irx,ilevel)
+                           shrot2_q1_i = sh_rot2( 9+p,2,irz,iry,irx,ilevel)
+                           shrot1_q2_r = sh_rot1(12+p,1,irz,iry,irx,ilevel)
+                           shrot1_q2_i = sh_rot1(12+p,2,irz,iry,irx,ilevel)
+                           shrot2_q2_r = sh_rot2(12+p,1,irz,iry,irx,ilevel)
+                           shrot2_q2_i = sh_rot2(12+p,2,irz,iry,irx,ilevel)
+
+                           wwm_north(m1,1,1) = wwm_north(m1,1,1) + wm_q0_1r * shrot1_q0_r + wm_q0_1i * shrot2_q0_r &
+                                             &                   + wm_q1_1r * shrot1_q1_r + wm_q1_1i * shrot2_q1_r &
+                                             &                   + wm_q2_1r * shrot1_q2_r + wm_q2_1i * shrot2_q2_r
+                           wwm_north(m1,2,1) = wwm_north(m1,2,1) + wm_q0_1r * shrot1_q0_i + wm_q0_1i * shrot2_q0_i &
+                                             &                   + wm_q1_1r * shrot1_q1_i + wm_q1_1i * shrot2_q1_i &
+                                             &                   + wm_q2_1r * shrot1_q2_i + wm_q2_1i * shrot2_q2_i
+                           wwm_north(m1,1,2) = wwm_north(m1,1,2) + wm_q0_2r * shrot1_q0_r + wm_q0_2i * shrot2_q0_r &
+                                             &                   + wm_q1_2r * shrot1_q1_r + wm_q1_2i * shrot2_q1_r &
+                                             &                   + wm_q2_2r * shrot1_q2_r + wm_q2_2i * shrot2_q2_r
+                           wwm_north(m1,2,2) = wwm_north(m1,2,2) + wm_q0_2r * shrot1_q0_i + wm_q0_2i * shrot2_q0_i &
+                                             &                   + wm_q1_2r * shrot1_q1_i + wm_q1_2i * shrot2_q1_i &
+                                             &                   + wm_q2_2r * shrot1_q2_i + wm_q2_2i * shrot2_q2_i
+                           wwm_north(m1,1,3) = wwm_north(m1,1,3) + wm_q0_3r * shrot1_q0_r + wm_q0_3i * shrot2_q0_r &
+                                             &                   + wm_q1_3r * shrot1_q1_r + wm_q1_3i * shrot2_q1_r &
+                                             &                   + wm_q2_3r * shrot1_q2_r + wm_q2_3i * shrot2_q2_r
+                           wwm_north(m1,2,3) = wwm_north(m1,2,3) + wm_q0_3r * shrot1_q0_i + wm_q0_3i * shrot2_q0_i &
+                                             &                   + wm_q1_3r * shrot1_q1_i + wm_q1_3i * shrot2_q1_i &
+                                             &                   + wm_q2_3r * shrot1_q2_i + wm_q2_3i * shrot2_q2_i
+                           wwm_north(m1,1,4) = wwm_north(m1,1,4) + wm_q0_4r * shrot1_q0_r + wm_q0_4i * shrot2_q0_r &
+                                             &                   + wm_q1_4r * shrot1_q1_r + wm_q1_4i * shrot2_q1_r &
+                                             &                   + wm_q2_4r * shrot1_q2_r + wm_q2_4i * shrot2_q2_r
+                           wwm_north(m1,2,4) = wwm_north(m1,2,4) + wm_q0_4r * shrot1_q0_i + wm_q0_4i * shrot2_q0_i &
+                                             &                   + wm_q1_4r * shrot1_q1_i + wm_q1_4i * shrot2_q1_i &
+                                             &                   + wm_q2_4r * shrot1_q2_i + wm_q2_4i * shrot2_q2_i
+                           wwm_north(m1,1,5) = wwm_north(m1,1,5) + wm_q0_5r * shrot1_q0_r + wm_q0_5i * shrot2_q0_r &
+                                             &                   + wm_q1_5r * shrot1_q1_r + wm_q1_5i * shrot2_q1_r &
+                                             &                   + wm_q2_5r * shrot1_q2_r + wm_q2_5i * shrot2_q2_r
+                           wwm_north(m1,2,5) = wwm_north(m1,2,5) + wm_q0_5r * shrot1_q0_i + wm_q0_5i * shrot2_q0_i &
+                                             &                   + wm_q1_5r * shrot1_q1_i + wm_q1_5i * shrot2_q1_i &
+                                             &                   + wm_q2_5r * shrot1_q2_i + wm_q2_5i * shrot2_q2_i
+                           wwm_north(m1,1,6) = wwm_north(m1,1,6) + wm_q0_6r * shrot1_q0_r + wm_q0_6i * shrot2_q0_r &
+                                             &                   + wm_q1_6r * shrot1_q1_r + wm_q1_6i * shrot2_q1_r &
+                                             &                   + wm_q2_6r * shrot1_q2_r + wm_q2_6i * shrot2_q2_r
+                           wwm_north(m1,2,6) = wwm_north(m1,2,6) + wm_q0_6r * shrot1_q0_i + wm_q0_6i * shrot2_q0_i &
+                                             &                   + wm_q1_6r * shrot1_q1_i + wm_q1_6i * shrot2_q1_i &
+                                             &                   + wm_q2_6r * shrot1_q2_i + wm_q2_6i * shrot2_q2_i
+                           wwm_north(m1,1,7) = wwm_north(m1,1,7) + wm_q0_7r * shrot1_q0_r + wm_q0_7i * shrot2_q0_r &
+                                             &                   + wm_q1_7r * shrot1_q1_r + wm_q1_7i * shrot2_q1_r &
+                                             &                   + wm_q2_7r * shrot1_q2_r + wm_q2_7i * shrot2_q2_r
+                           wwm_north(m1,2,7) = wwm_north(m1,2,7) + wm_q0_7r * shrot1_q0_i + wm_q0_7i * shrot2_q0_i &
+                                             &                   + wm_q1_7r * shrot1_q1_i + wm_q1_7i * shrot2_q1_i &
+                                             &                   + wm_q2_7r * shrot1_q2_i + wm_q2_7i * shrot2_q2_i
+                           wwm_north(m1,1,8) = wwm_north(m1,1,8) + wm_q0_8r * shrot1_q0_r + wm_q0_8i * shrot2_q0_r &
+                                             &                   + wm_q1_8r * shrot1_q1_r + wm_q1_8i * shrot2_q1_r &
+                                             &                   + wm_q2_8r * shrot1_q2_r + wm_q2_8i * shrot2_q2_r
+                           wwm_north(m1,2,8) = wwm_north(m1,2,8) + wm_q0_8r * shrot1_q0_i + wm_q0_8i * shrot2_q0_i &
+                                             &                   + wm_q1_8r * shrot1_q1_i + wm_q1_8i * shrot2_q1_i &
+                                             &                   + wm_q2_8r * shrot1_q2_i + wm_q2_8i * shrot2_q2_i
+                        enddo
+
+                  ! j=3, m2_b=7, ind_1dim_b=15
+                        wm_q0_1r = wm( 7,1,icz1_1,icy1_1,icx1_1)
+                        wm_q0_1i = wm( 7,2,icz1_1,icy1_1,icx1_1)
+                        wm_q0_2r = wm( 7,1,icz1_2,icy1_2,icx1_2)
+                        wm_q0_2i = wm( 7,2,icz1_2,icy1_2,icx1_2)
+                        wm_q0_3r = wm( 7,1,icz1_3,icy1_3,icx1_3)
+                        wm_q0_3i = wm( 7,2,icz1_3,icy1_3,icx1_3)
+                        wm_q0_4r = wm( 7,1,icz1_4,icy1_4,icx1_4)
+                        wm_q0_4i = wm( 7,2,icz1_4,icy1_4,icx1_4)
+                        wm_q0_5r = wm( 7,1,icz1_5,icy1_5,icx1_5)
+                        wm_q0_5i = wm( 7,2,icz1_5,icy1_5,icx1_5)
+                        wm_q0_6r = wm( 7,1,icz1_6,icy1_6,icx1_6)
+                        wm_q0_6i = wm( 7,2,icz1_6,icy1_6,icx1_6)
+                        wm_q0_7r = wm( 7,1,icz1_7,icy1_7,icx1_7)
+                        wm_q0_7i = wm( 7,2,icz1_7,icy1_7,icx1_7)
+                        wm_q0_8r = wm( 7,1,icz1_8,icy1_8,icx1_8)
+                        wm_q0_8i = wm( 7,2,icz1_8,icy1_8,icx1_8)
+                        wm_q1_1r = wm( 8,1,icz1_1,icy1_1,icx1_1)
+                        wm_q1_1i = wm( 8,2,icz1_1,icy1_1,icx1_1)
+                        wm_q1_2r = wm( 8,1,icz1_2,icy1_2,icx1_2)
+                        wm_q1_2i = wm( 8,2,icz1_2,icy1_2,icx1_2)
+                        wm_q1_3r = wm( 8,1,icz1_3,icy1_3,icx1_3)
+                        wm_q1_3i = wm( 8,2,icz1_3,icy1_3,icx1_3)
+                        wm_q1_4r = wm( 8,1,icz1_4,icy1_4,icx1_4)
+                        wm_q1_4i = wm( 8,2,icz1_4,icy1_4,icx1_4)
+                        wm_q1_5r = wm( 8,1,icz1_5,icy1_5,icx1_5)
+                        wm_q1_5i = wm( 8,2,icz1_5,icy1_5,icx1_5)
+                        wm_q1_6r = wm( 8,1,icz1_6,icy1_6,icx1_6)
+                        wm_q1_6i = wm( 8,2,icz1_6,icy1_6,icx1_6)
+                        wm_q1_7r = wm( 8,1,icz1_7,icy1_7,icx1_7)
+                        wm_q1_7i = wm( 8,2,icz1_7,icy1_7,icx1_7)
+                        wm_q1_8r = wm( 8,1,icz1_8,icy1_8,icx1_8)
+                        wm_q1_8i = wm( 8,2,icz1_8,icy1_8,icx1_8)
+                        wm_q2_1r = wm( 9,1,icz1_1,icy1_1,icx1_1)
+                        wm_q2_1i = wm( 9,2,icz1_1,icy1_1,icx1_1)
+                        wm_q2_2r = wm( 9,1,icz1_2,icy1_2,icx1_2)
+                        wm_q2_2i = wm( 9,2,icz1_2,icy1_2,icx1_2)
+                        wm_q2_3r = wm( 9,1,icz1_3,icy1_3,icx1_3)
+                        wm_q2_3i = wm( 9,2,icz1_3,icy1_3,icx1_3)
+                        wm_q2_4r = wm( 9,1,icz1_4,icy1_4,icx1_4)
+                        wm_q2_4i = wm( 9,2,icz1_4,icy1_4,icx1_4)
+                        wm_q2_5r = wm( 9,1,icz1_5,icy1_5,icx1_5)
+                        wm_q2_5i = wm( 9,2,icz1_5,icy1_5,icx1_5)
+                        wm_q2_6r = wm( 9,1,icz1_6,icy1_6,icx1_6)
+                        wm_q2_6i = wm( 9,2,icz1_6,icy1_6,icx1_6)
+                        wm_q2_7r = wm( 9,1,icz1_7,icy1_7,icx1_7)
+                        wm_q2_7i = wm( 9,2,icz1_7,icy1_7,icx1_7)
+                        wm_q2_8r = wm( 9,1,icz1_8,icy1_8,icx1_8)
+                        wm_q2_8i = wm( 9,2,icz1_8,icy1_8,icx1_8)
+                        wm_q3_1r = wm(10,1,icz1_1,icy1_1,icx1_1)
+                        wm_q3_1i = wm(10,2,icz1_1,icy1_1,icx1_1)
+                        wm_q3_2r = wm(10,1,icz1_2,icy1_2,icx1_2)
+                        wm_q3_2i = wm(10,2,icz1_2,icy1_2,icx1_2)
+                        wm_q3_3r = wm(10,1,icz1_3,icy1_3,icx1_3)
+                        wm_q3_3i = wm(10,2,icz1_3,icy1_3,icx1_3)
+                        wm_q3_4r = wm(10,1,icz1_4,icy1_4,icx1_4)
+                        wm_q3_4i = wm(10,2,icz1_4,icy1_4,icx1_4)
+                        wm_q3_5r = wm(10,1,icz1_5,icy1_5,icx1_5)
+                        wm_q3_5i = wm(10,2,icz1_5,icy1_5,icx1_5)
+                        wm_q3_6r = wm(10,1,icz1_6,icy1_6,icx1_6)
+                        wm_q3_6i = wm(10,2,icz1_6,icy1_6,icx1_6)
+                        wm_q3_7r = wm(10,1,icz1_7,icy1_7,icx1_7)
+                        wm_q3_7i = wm(10,2,icz1_7,icy1_7,icx1_7)
+                        wm_q3_8r = wm(10,1,icz1_8,icy1_8,icx1_8)
+                        wm_q3_8i = wm(10,2,icz1_8,icy1_8,icx1_8)
+!ocl simd_redundant_vl(5)
+                        do p=0,3               ! parallel loop.
+                           m1 = 7 + p                ! translating the indices (j,p) to 1-dim index
+                           shrot1_q0_r = sh_rot1(15+p,1,irz,iry,irx,ilevel)
+                           shrot1_q0_i = sh_rot1(15+p,2,irz,iry,irx,ilevel)
+                           shrot2_q0_r = sh_rot2(15+p,1,irz,iry,irx,ilevel)
+                           shrot2_q0_i = sh_rot2(15+p,2,irz,iry,irx,ilevel)
+                           shrot1_q1_r = sh_rot1(19+p,1,irz,iry,irx,ilevel)
+                           shrot1_q1_i = sh_rot1(19+p,2,irz,iry,irx,ilevel)
+                           shrot2_q1_r = sh_rot2(19+p,1,irz,iry,irx,ilevel)
+                           shrot2_q1_i = sh_rot2(19+p,2,irz,iry,irx,ilevel)
+                           shrot1_q2_r = sh_rot1(23+p,1,irz,iry,irx,ilevel)
+                           shrot1_q2_i = sh_rot1(23+p,2,irz,iry,irx,ilevel)
+                           shrot2_q2_r = sh_rot2(23+p,1,irz,iry,irx,ilevel)
+                           shrot2_q2_i = sh_rot2(23+p,2,irz,iry,irx,ilevel)
+                           shrot1_q3_r = sh_rot1(27+p,1,irz,iry,irx,ilevel)
+                           shrot1_q3_i = sh_rot1(27+p,2,irz,iry,irx,ilevel)
+                           shrot2_q3_r = sh_rot2(27+p,1,irz,iry,irx,ilevel)
+                           shrot2_q3_i = sh_rot2(27+p,2,irz,iry,irx,ilevel)
+
+                           wwm_north(m1,1,1) = wwm_north(m1,1,1) + wm_q0_1r * shrot1_q0_r + wm_q0_1i * shrot2_q0_r &
+                                             &                   + wm_q1_1r * shrot1_q1_r + wm_q1_1i * shrot2_q1_r &
+                                             &                   + wm_q2_1r * shrot1_q2_r + wm_q2_1i * shrot2_q2_r &
+                                             &                   + wm_q3_1r * shrot1_q3_r + wm_q3_1i * shrot2_q3_r
+                           wwm_north(m1,2,1) = wwm_north(m1,2,1) + wm_q0_1r * shrot1_q0_i + wm_q0_1i * shrot2_q0_i &
+                                             &                   + wm_q1_1r * shrot1_q1_i + wm_q1_1i * shrot2_q1_i &
+                                             &                   + wm_q2_1r * shrot1_q2_i + wm_q2_1i * shrot2_q2_i &
+                                             &                   + wm_q3_1r * shrot1_q3_i + wm_q3_1i * shrot2_q3_i
+                           wwm_north(m1,1,2) = wwm_north(m1,1,2) + wm_q0_2r * shrot1_q0_r + wm_q0_2i * shrot2_q0_r &
+                                             &                   + wm_q1_2r * shrot1_q1_r + wm_q1_2i * shrot2_q1_r &
+                                             &                   + wm_q2_2r * shrot1_q2_r + wm_q2_2i * shrot2_q2_r &
+                                             &                   + wm_q3_2r * shrot1_q3_r + wm_q3_2i * shrot2_q3_r
+                           wwm_north(m1,2,2) = wwm_north(m1,2,2) + wm_q0_2r * shrot1_q0_i + wm_q0_2i * shrot2_q0_i &
+                                             &                   + wm_q1_2r * shrot1_q1_i + wm_q1_2i * shrot2_q1_i &
+                                             &                   + wm_q2_2r * shrot1_q2_i + wm_q2_2i * shrot2_q2_i &
+                                             &                   + wm_q3_2r * shrot1_q3_i + wm_q3_2i * shrot2_q3_i
+                           wwm_north(m1,1,3) = wwm_north(m1,1,3) + wm_q0_3r * shrot1_q0_r + wm_q0_3i * shrot2_q0_r &
+                                             &                   + wm_q1_3r * shrot1_q1_r + wm_q1_3i * shrot2_q1_r &
+                                             &                   + wm_q2_3r * shrot1_q2_r + wm_q2_3i * shrot2_q2_r &
+                                             &                   + wm_q3_3r * shrot1_q3_r + wm_q3_3i * shrot2_q3_r
+                           wwm_north(m1,2,3) = wwm_north(m1,2,3) + wm_q0_3r * shrot1_q0_i + wm_q0_3i * shrot2_q0_i &
+                                             &                   + wm_q1_3r * shrot1_q1_i + wm_q1_3i * shrot2_q1_i &
+                                             &                   + wm_q2_3r * shrot1_q2_i + wm_q2_3i * shrot2_q2_i &
+                                             &                   + wm_q3_3r * shrot1_q3_i + wm_q3_3i * shrot2_q3_i
+                           wwm_north(m1,1,4) = wwm_north(m1,1,4) + wm_q0_4r * shrot1_q0_r + wm_q0_4i * shrot2_q0_r &
+                                             &                   + wm_q1_4r * shrot1_q1_r + wm_q1_4i * shrot2_q1_r &
+                                             &                   + wm_q2_4r * shrot1_q2_r + wm_q2_4i * shrot2_q2_r &
+                                             &                   + wm_q3_4r * shrot1_q3_r + wm_q3_4i * shrot2_q3_r
+                           wwm_north(m1,2,4) = wwm_north(m1,2,4) + wm_q0_4r * shrot1_q0_i + wm_q0_4i * shrot2_q0_i &
+                                             &                   + wm_q1_4r * shrot1_q1_i + wm_q1_4i * shrot2_q1_i &
+                                             &                   + wm_q2_4r * shrot1_q2_i + wm_q2_4i * shrot2_q2_i &
+                                             &                   + wm_q3_4r * shrot1_q3_i + wm_q3_4i * shrot2_q3_i
+                           wwm_north(m1,1,5) = wwm_north(m1,1,5) + wm_q0_5r * shrot1_q0_r + wm_q0_5i * shrot2_q0_r &
+                                             &                   + wm_q1_5r * shrot1_q1_r + wm_q1_5i * shrot2_q1_r &
+                                             &                   + wm_q2_5r * shrot1_q2_r + wm_q2_5i * shrot2_q2_r &
+                                             &                   + wm_q3_5r * shrot1_q3_r + wm_q3_5i * shrot2_q3_r
+                           wwm_north(m1,2,5) = wwm_north(m1,2,5) + wm_q0_5r * shrot1_q0_i + wm_q0_5i * shrot2_q0_i &
+                                             &                   + wm_q1_5r * shrot1_q1_i + wm_q1_5i * shrot2_q1_i &
+                                             &                   + wm_q2_5r * shrot1_q2_i + wm_q2_5i * shrot2_q2_i &
+                                             &                   + wm_q3_5r * shrot1_q3_i + wm_q3_5i * shrot2_q3_i
+                           wwm_north(m1,1,6) = wwm_north(m1,1,6) + wm_q0_6r * shrot1_q0_r + wm_q0_6i * shrot2_q0_r &
+                                             &                   + wm_q1_6r * shrot1_q1_r + wm_q1_6i * shrot2_q1_r &
+                                             &                   + wm_q2_6r * shrot1_q2_r + wm_q2_6i * shrot2_q2_r &
+                                             &                   + wm_q3_6r * shrot1_q3_r + wm_q3_6i * shrot2_q3_r
+                           wwm_north(m1,2,6) = wwm_north(m1,2,6) + wm_q0_6r * shrot1_q0_i + wm_q0_6i * shrot2_q0_i &
+                                             &                   + wm_q1_6r * shrot1_q1_i + wm_q1_6i * shrot2_q1_i &
+                                             &                   + wm_q2_6r * shrot1_q2_i + wm_q2_6i * shrot2_q2_i &
+                                             &                   + wm_q3_6r * shrot1_q3_i + wm_q3_6i * shrot2_q3_i
+                           wwm_north(m1,1,7) = wwm_north(m1,1,7) + wm_q0_7r * shrot1_q0_r + wm_q0_7i * shrot2_q0_r &
+                                             &                   + wm_q1_7r * shrot1_q1_r + wm_q1_7i * shrot2_q1_r &
+                                             &                   + wm_q2_7r * shrot1_q2_r + wm_q2_7i * shrot2_q2_r &
+                                             &                   + wm_q3_7r * shrot1_q3_r + wm_q3_7i * shrot2_q3_r
+                           wwm_north(m1,2,7) = wwm_north(m1,2,7) + wm_q0_7r * shrot1_q0_i + wm_q0_7i * shrot2_q0_i &
+                                             &                   + wm_q1_7r * shrot1_q1_i + wm_q1_7i * shrot2_q1_i &
+                                             &                   + wm_q2_7r * shrot1_q2_i + wm_q2_7i * shrot2_q2_i &
+                                             &                   + wm_q3_7r * shrot1_q3_i + wm_q3_7i * shrot2_q3_i
+                           wwm_north(m1,1,8) = wwm_north(m1,1,8) + wm_q0_8r * shrot1_q0_r + wm_q0_8i * shrot2_q0_r &
+                                             &                   + wm_q1_8r * shrot1_q1_r + wm_q1_8i * shrot2_q1_r &
+                                             &                   + wm_q2_8r * shrot1_q2_r + wm_q2_8i * shrot2_q2_r &
+                                             &                   + wm_q3_8r * shrot1_q3_r + wm_q3_8i * shrot2_q3_r
+                           wwm_north(m1,2,8) = wwm_north(m1,2,8) + wm_q0_8r * shrot1_q0_i + wm_q0_8i * shrot2_q0_i &
+                                             &                   + wm_q1_8r * shrot1_q1_i + wm_q1_8i * shrot2_q1_i &
+                                             &                   + wm_q2_8r * shrot1_q2_i + wm_q2_8i * shrot2_q2_i &
+                                             &                   + wm_q3_8r * shrot1_q3_i + wm_q3_8i * shrot2_q3_i
+                        enddo
+
+                  ! j=4, m2_b=11, ind_1dim_b=31
+                        wm_q0_1r = wm(11,1,icz1_1,icy1_1,icx1_1)
+                        wm_q0_1i = wm(11,2,icz1_1,icy1_1,icx1_1)
+                        wm_q0_2r = wm(11,1,icz1_2,icy1_2,icx1_2)
+                        wm_q0_2i = wm(11,2,icz1_2,icy1_2,icx1_2)
+                        wm_q0_3r = wm(11,1,icz1_3,icy1_3,icx1_3)
+                        wm_q0_3i = wm(11,2,icz1_3,icy1_3,icx1_3)
+                        wm_q0_4r = wm(11,1,icz1_4,icy1_4,icx1_4)
+                        wm_q0_4i = wm(11,2,icz1_4,icy1_4,icx1_4)
+                        wm_q0_5r = wm(11,1,icz1_5,icy1_5,icx1_5)
+                        wm_q0_5i = wm(11,2,icz1_5,icy1_5,icx1_5)
+                        wm_q0_6r = wm(11,1,icz1_6,icy1_6,icx1_6)
+                        wm_q0_6i = wm(11,2,icz1_6,icy1_6,icx1_6)
+                        wm_q0_7r = wm(11,1,icz1_7,icy1_7,icx1_7)
+                        wm_q0_7i = wm(11,2,icz1_7,icy1_7,icx1_7)
+                        wm_q0_8r = wm(11,1,icz1_8,icy1_8,icx1_8)
+                        wm_q0_8i = wm(11,2,icz1_8,icy1_8,icx1_8)
+                        wm_q1_1r = wm(12,1,icz1_1,icy1_1,icx1_1)
+                        wm_q1_1i = wm(12,2,icz1_1,icy1_1,icx1_1)
+                        wm_q1_2r = wm(12,1,icz1_2,icy1_2,icx1_2)
+                        wm_q1_2i = wm(12,2,icz1_2,icy1_2,icx1_2)
+                        wm_q1_3r = wm(12,1,icz1_3,icy1_3,icx1_3)
+                        wm_q1_3i = wm(12,2,icz1_3,icy1_3,icx1_3)
+                        wm_q1_4r = wm(12,1,icz1_4,icy1_4,icx1_4)
+                        wm_q1_4i = wm(12,2,icz1_4,icy1_4,icx1_4)
+                        wm_q1_5r = wm(12,1,icz1_5,icy1_5,icx1_5)
+                        wm_q1_5i = wm(12,2,icz1_5,icy1_5,icx1_5)
+                        wm_q1_6r = wm(12,1,icz1_6,icy1_6,icx1_6)
+                        wm_q1_6i = wm(12,2,icz1_6,icy1_6,icx1_6)
+                        wm_q1_7r = wm(12,1,icz1_7,icy1_7,icx1_7)
+                        wm_q1_7i = wm(12,2,icz1_7,icy1_7,icx1_7)
+                        wm_q1_8r = wm(12,1,icz1_8,icy1_8,icx1_8)
+                        wm_q1_8i = wm(12,2,icz1_8,icy1_8,icx1_8)
+                        wm_q2_1r = wm(13,1,icz1_1,icy1_1,icx1_1)
+                        wm_q2_1i = wm(13,2,icz1_1,icy1_1,icx1_1)
+                        wm_q2_2r = wm(13,1,icz1_2,icy1_2,icx1_2)
+                        wm_q2_2i = wm(13,2,icz1_2,icy1_2,icx1_2)
+                        wm_q2_3r = wm(13,1,icz1_3,icy1_3,icx1_3)
+                        wm_q2_3i = wm(13,2,icz1_3,icy1_3,icx1_3)
+                        wm_q2_4r = wm(13,1,icz1_4,icy1_4,icx1_4)
+                        wm_q2_4i = wm(13,2,icz1_4,icy1_4,icx1_4)
+                        wm_q2_5r = wm(13,1,icz1_5,icy1_5,icx1_5)
+                        wm_q2_5i = wm(13,2,icz1_5,icy1_5,icx1_5)
+                        wm_q2_6r = wm(13,1,icz1_6,icy1_6,icx1_6)
+                        wm_q2_6i = wm(13,2,icz1_6,icy1_6,icx1_6)
+                        wm_q2_7r = wm(13,1,icz1_7,icy1_7,icx1_7)
+                        wm_q2_7i = wm(13,2,icz1_7,icy1_7,icx1_7)
+                        wm_q2_8r = wm(13,1,icz1_8,icy1_8,icx1_8)
+                        wm_q2_8i = wm(13,2,icz1_8,icy1_8,icx1_8)
+                        wm_q3_1r = wm(14,1,icz1_1,icy1_1,icx1_1)
+                        wm_q3_1i = wm(14,2,icz1_1,icy1_1,icx1_1)
+                        wm_q3_2r = wm(14,1,icz1_2,icy1_2,icx1_2)
+                        wm_q3_2i = wm(14,2,icz1_2,icy1_2,icx1_2)
+                        wm_q3_3r = wm(14,1,icz1_3,icy1_3,icx1_3)
+                        wm_q3_3i = wm(14,2,icz1_3,icy1_3,icx1_3)
+                        wm_q3_4r = wm(14,1,icz1_4,icy1_4,icx1_4)
+                        wm_q3_4i = wm(14,2,icz1_4,icy1_4,icx1_4)
+                        wm_q3_5r = wm(14,1,icz1_5,icy1_5,icx1_5)
+                        wm_q3_5i = wm(14,2,icz1_5,icy1_5,icx1_5)
+                        wm_q3_6r = wm(14,1,icz1_6,icy1_6,icx1_6)
+                        wm_q3_6i = wm(14,2,icz1_6,icy1_6,icx1_6)
+                        wm_q3_7r = wm(14,1,icz1_7,icy1_7,icx1_7)
+                        wm_q3_7i = wm(14,2,icz1_7,icy1_7,icx1_7)
+                        wm_q3_8r = wm(14,1,icz1_8,icy1_8,icx1_8)
+                        wm_q3_8i = wm(14,2,icz1_8,icy1_8,icx1_8)
+                        wm_q4_1r = wm(15,1,icz1_1,icy1_1,icx1_1)
+                        wm_q4_1i = wm(15,2,icz1_1,icy1_1,icx1_1)
+                        wm_q4_2r = wm(15,1,icz1_2,icy1_2,icx1_2)
+                        wm_q4_2i = wm(15,2,icz1_2,icy1_2,icx1_2)
+                        wm_q4_3r = wm(15,1,icz1_3,icy1_3,icx1_3)
+                        wm_q4_3i = wm(15,2,icz1_3,icy1_3,icx1_3)
+                        wm_q4_4r = wm(15,1,icz1_4,icy1_4,icx1_4)
+                        wm_q4_4i = wm(15,2,icz1_4,icy1_4,icx1_4)
+                        wm_q4_5r = wm(15,1,icz1_5,icy1_5,icx1_5)
+                        wm_q4_5i = wm(15,2,icz1_5,icy1_5,icx1_5)
+                        wm_q4_6r = wm(15,1,icz1_6,icy1_6,icx1_6)
+                        wm_q4_6i = wm(15,2,icz1_6,icy1_6,icx1_6)
+                        wm_q4_7r = wm(15,1,icz1_7,icy1_7,icx1_7)
+                        wm_q4_7i = wm(15,2,icz1_7,icy1_7,icx1_7)
+                        wm_q4_8r = wm(15,1,icz1_8,icy1_8,icx1_8)
+                        wm_q4_8i = wm(15,2,icz1_8,icy1_8,icx1_8)
+!ocl simd_redundant_vl(5)
+                        do p=0,4               ! parallel loop.
+                           m1 = 11 + p                ! translating the indices (j,p) to 1-dim index
+                           shrot1_q0_r = sh_rot1(31+p,1,irz,iry,irx,ilevel)
+                           shrot1_q0_i = sh_rot1(31+p,2,irz,iry,irx,ilevel)
+                           shrot2_q0_r = sh_rot2(31+p,1,irz,iry,irx,ilevel)
+                           shrot2_q0_i = sh_rot2(31+p,2,irz,iry,irx,ilevel)
+                           shrot1_q1_r = sh_rot1(36+p,1,irz,iry,irx,ilevel)
+                           shrot1_q1_i = sh_rot1(36+p,2,irz,iry,irx,ilevel)
+                           shrot2_q1_r = sh_rot2(36+p,1,irz,iry,irx,ilevel)
+                           shrot2_q1_i = sh_rot2(36+p,2,irz,iry,irx,ilevel)
+                           shrot1_q2_r = sh_rot1(41+p,1,irz,iry,irx,ilevel)
+                           shrot1_q2_i = sh_rot1(41+p,2,irz,iry,irx,ilevel)
+                           shrot2_q2_r = sh_rot2(41+p,1,irz,iry,irx,ilevel)
+                           shrot2_q2_i = sh_rot2(41+p,2,irz,iry,irx,ilevel)
+                           shrot1_q3_r = sh_rot1(46+p,1,irz,iry,irx,ilevel)
+                           shrot1_q3_i = sh_rot1(46+p,2,irz,iry,irx,ilevel)
+                           shrot2_q3_r = sh_rot2(46+p,1,irz,iry,irx,ilevel)
+                           shrot2_q3_i = sh_rot2(46+p,2,irz,iry,irx,ilevel)
+                           shrot1_q4_r = sh_rot1(51+p,1,irz,iry,irx,ilevel)
+                           shrot1_q4_i = sh_rot1(51+p,2,irz,iry,irx,ilevel)
+                           shrot2_q4_r = sh_rot2(51+p,1,irz,iry,irx,ilevel)
+                           shrot2_q4_i = sh_rot2(51+p,2,irz,iry,irx,ilevel)
+
+                           wwm_north(m1,1,1) = wwm_north(m1,1,1) + wm_q0_1r * shrot1_q0_r + wm_q0_1i * shrot2_q0_r &
+                                             &                   + wm_q1_1r * shrot1_q1_r + wm_q1_1i * shrot2_q1_r &
+                                             &                   + wm_q2_1r * shrot1_q2_r + wm_q2_1i * shrot2_q2_r &
+                                             &                   + wm_q3_1r * shrot1_q3_r + wm_q3_1i * shrot2_q3_r &
+                                             &                   + wm_q4_1r * shrot1_q4_r + wm_q4_1i * shrot2_q4_r
+                           wwm_north(m1,2,1) = wwm_north(m1,2,1) + wm_q0_1r * shrot1_q0_i + wm_q0_1i * shrot2_q0_i &
+                                             &                   + wm_q1_1r * shrot1_q1_i + wm_q1_1i * shrot2_q1_i &
+                                             &                   + wm_q2_1r * shrot1_q2_i + wm_q2_1i * shrot2_q2_i &
+                                             &                   + wm_q3_1r * shrot1_q3_i + wm_q3_1i * shrot2_q3_i &
+                                             &                   + wm_q4_1r * shrot1_q4_i + wm_q4_1i * shrot2_q4_i
+                           wwm_north(m1,1,2) = wwm_north(m1,1,2) + wm_q0_2r * shrot1_q0_r + wm_q0_2i * shrot2_q0_r &
+                                             &                   + wm_q1_2r * shrot1_q1_r + wm_q1_2i * shrot2_q1_r &
+                                             &                   + wm_q2_2r * shrot1_q2_r + wm_q2_2i * shrot2_q2_r &
+                                             &                   + wm_q3_2r * shrot1_q3_r + wm_q3_2i * shrot2_q3_r &
+                                             &                   + wm_q4_2r * shrot1_q4_r + wm_q4_2i * shrot2_q4_r
+                           wwm_north(m1,2,2) = wwm_north(m1,2,2) + wm_q0_2r * shrot1_q0_i + wm_q0_2i * shrot2_q0_i &
+                                             &                   + wm_q1_2r * shrot1_q1_i + wm_q1_2i * shrot2_q1_i &
+                                             &                   + wm_q2_2r * shrot1_q2_i + wm_q2_2i * shrot2_q2_i &
+                                             &                   + wm_q3_2r * shrot1_q3_i + wm_q3_2i * shrot2_q3_i &
+                                             &                   + wm_q4_2r * shrot1_q4_i + wm_q4_2i * shrot2_q4_i
+                           wwm_north(m1,1,3) = wwm_north(m1,1,3) + wm_q0_3r * shrot1_q0_r + wm_q0_3i * shrot2_q0_r &
+                                             &                   + wm_q1_3r * shrot1_q1_r + wm_q1_3i * shrot2_q1_r &
+                                             &                   + wm_q2_3r * shrot1_q2_r + wm_q2_3i * shrot2_q2_r &
+                                             &                   + wm_q3_3r * shrot1_q3_r + wm_q3_3i * shrot2_q3_r &
+                                             &                   + wm_q4_3r * shrot1_q4_r + wm_q4_3i * shrot2_q4_r
+                           wwm_north(m1,2,3) = wwm_north(m1,2,3) + wm_q0_3r * shrot1_q0_i + wm_q0_3i * shrot2_q0_i &
+                                             &                   + wm_q1_3r * shrot1_q1_i + wm_q1_3i * shrot2_q1_i &
+                                             &                   + wm_q2_3r * shrot1_q2_i + wm_q2_3i * shrot2_q2_i &
+                                             &                   + wm_q3_3r * shrot1_q3_i + wm_q3_3i * shrot2_q3_i &
+                                             &                   + wm_q4_3r * shrot1_q4_i + wm_q4_3i * shrot2_q4_i
+                           wwm_north(m1,1,4) = wwm_north(m1,1,4) + wm_q0_4r * shrot1_q0_r + wm_q0_4i * shrot2_q0_r &
+                                             &                   + wm_q1_4r * shrot1_q1_r + wm_q1_4i * shrot2_q1_r &
+                                             &                   + wm_q2_4r * shrot1_q2_r + wm_q2_4i * shrot2_q2_r &
+                                             &                   + wm_q3_4r * shrot1_q3_r + wm_q3_4i * shrot2_q3_r &
+                                             &                   + wm_q4_4r * shrot1_q4_r + wm_q4_4i * shrot2_q4_r
+                           wwm_north(m1,2,4) = wwm_north(m1,2,4) + wm_q0_4r * shrot1_q0_i + wm_q0_4i * shrot2_q0_i &
+                                             &                   + wm_q1_4r * shrot1_q1_i + wm_q1_4i * shrot2_q1_i &
+                                             &                   + wm_q2_4r * shrot1_q2_i + wm_q2_4i * shrot2_q2_i &
+                                             &                   + wm_q3_4r * shrot1_q3_i + wm_q3_4i * shrot2_q3_i &
+                                             &                   + wm_q4_4r * shrot1_q4_i + wm_q4_4i * shrot2_q4_i
+                           wwm_north(m1,1,5) = wwm_north(m1,1,5) + wm_q0_5r * shrot1_q0_r + wm_q0_5i * shrot2_q0_r &
+                                             &                   + wm_q1_5r * shrot1_q1_r + wm_q1_5i * shrot2_q1_r &
+                                             &                   + wm_q2_5r * shrot1_q2_r + wm_q2_5i * shrot2_q2_r &
+                                             &                   + wm_q3_5r * shrot1_q3_r + wm_q3_5i * shrot2_q3_r &
+                                             &                   + wm_q4_5r * shrot1_q4_r + wm_q4_5i * shrot2_q4_r
+                           wwm_north(m1,2,5) = wwm_north(m1,2,5) + wm_q0_5r * shrot1_q0_i + wm_q0_5i * shrot2_q0_i &
+                                             &                   + wm_q1_5r * shrot1_q1_i + wm_q1_5i * shrot2_q1_i &
+                                             &                   + wm_q2_5r * shrot1_q2_i + wm_q2_5i * shrot2_q2_i &
+                                             &                   + wm_q3_5r * shrot1_q3_i + wm_q3_5i * shrot2_q3_i &
+                                             &                   + wm_q4_5r * shrot1_q4_i + wm_q4_5i * shrot2_q4_i
+                           wwm_north(m1,1,6) = wwm_north(m1,1,6) + wm_q0_6r * shrot1_q0_r + wm_q0_6i * shrot2_q0_r &
+                                             &                   + wm_q1_6r * shrot1_q1_r + wm_q1_6i * shrot2_q1_r &
+                                             &                   + wm_q2_6r * shrot1_q2_r + wm_q2_6i * shrot2_q2_r &
+                                             &                   + wm_q3_6r * shrot1_q3_r + wm_q3_6i * shrot2_q3_r &
+                                             &                   + wm_q4_6r * shrot1_q4_r + wm_q4_6i * shrot2_q4_r
+                           wwm_north(m1,2,6) = wwm_north(m1,2,6) + wm_q0_6r * shrot1_q0_i + wm_q0_6i * shrot2_q0_i &
+                                             &                   + wm_q1_6r * shrot1_q1_i + wm_q1_6i * shrot2_q1_i &
+                                             &                   + wm_q2_6r * shrot1_q2_i + wm_q2_6i * shrot2_q2_i &
+                                             &                   + wm_q3_6r * shrot1_q3_i + wm_q3_6i * shrot2_q3_i &
+                                             &                   + wm_q4_6r * shrot1_q4_i + wm_q4_6i * shrot2_q4_i
+                           wwm_north(m1,1,7) = wwm_north(m1,1,7) + wm_q0_7r * shrot1_q0_r + wm_q0_7i * shrot2_q0_r &
+                                             &                   + wm_q1_7r * shrot1_q1_r + wm_q1_7i * shrot2_q1_r &
+                                             &                   + wm_q2_7r * shrot1_q2_r + wm_q2_7i * shrot2_q2_r &
+                                             &                   + wm_q3_7r * shrot1_q3_r + wm_q3_7i * shrot2_q3_r &
+                                             &                   + wm_q4_7r * shrot1_q4_r + wm_q4_7i * shrot2_q4_r
+                           wwm_north(m1,2,7) = wwm_north(m1,2,7) + wm_q0_7r * shrot1_q0_i + wm_q0_7i * shrot2_q0_i &
+                                             &                   + wm_q1_7r * shrot1_q1_i + wm_q1_7i * shrot2_q1_i &
+                                             &                   + wm_q2_7r * shrot1_q2_i + wm_q2_7i * shrot2_q2_i &
+                                             &                   + wm_q3_7r * shrot1_q3_i + wm_q3_7i * shrot2_q3_i &
+                                             &                   + wm_q4_7r * shrot1_q4_i + wm_q4_7i * shrot2_q4_i
+                           wwm_north(m1,1,8) = wwm_north(m1,1,8) + wm_q0_8r * shrot1_q0_r + wm_q0_8i * shrot2_q0_r &
+                                             &                   + wm_q1_8r * shrot1_q1_r + wm_q1_8i * shrot2_q1_r &
+                                             &                   + wm_q2_8r * shrot1_q2_r + wm_q2_8i * shrot2_q2_r &
+                                             &                   + wm_q3_8r * shrot1_q3_r + wm_q3_8i * shrot2_q3_r &
+                                             &                   + wm_q4_8r * shrot1_q4_r + wm_q4_8i * shrot2_q4_r
+                           wwm_north(m1,2,8) = wwm_north(m1,2,8) + wm_q0_8r * shrot1_q0_i + wm_q0_8i * shrot2_q0_i &
+                                             &                   + wm_q1_8r * shrot1_q1_i + wm_q1_8i * shrot2_q1_i &
+                                             &                   + wm_q2_8r * shrot1_q2_i + wm_q2_8i * shrot2_q2_i &
+                                             &                   + wm_q3_8r * shrot1_q3_i + wm_q3_8i * shrot2_q3_i &
+                                             &                   + wm_q4_8r * shrot1_q4_i + wm_q4_8i * shrot2_q4_i
+                        enddo
+
+                 !! M2L for z-axis
+                  ! j=0
+                            wwl_north( 1  ,1, 1) = wwl_north( 1  ,1, 1) &
+                    ! n=0
+                               & + wwm_north( 1  ,1, 1) * shml( 0,irz,iry,irx,ilevel) &
+                    ! n=1
+                               & + wwm_north( 2  ,1, 1) * shml( 1,irz,iry,irx,ilevel) &
+                    ! n=2
+                               & + wwm_north( 4  ,1, 1) * shml( 2,irz,iry,irx,ilevel) &
+                    ! n=3
+                               & + wwm_north( 7  ,1, 1) * shml( 3,irz,iry,irx,ilevel) &
+                    ! n=4
+                               & + wwm_north(11  ,1, 1) * shml( 4,irz,iry,irx,ilevel)
+
+                            wwl_north( 1  ,2, 1) = wwl_north( 1  ,2, 1) &
+                    ! n=0
+                               & + wwm_north( 1  ,2, 1) * shml( 0,irz,iry,irx,ilevel) &
+                    ! n=1
+                               & + wwm_north( 2  ,2, 1) * shml( 1,irz,iry,irx,ilevel) &
+                    ! n=2
+                               & + wwm_north( 4  ,2, 1) * shml( 2,irz,iry,irx,ilevel) &
+                    ! n=3
+                               & + wwm_north( 7  ,2, 1) * shml( 3,irz,iry,irx,ilevel) &
+                    ! n=4
+                               & + wwm_north(11  ,2, 1) * shml( 4,irz,iry,irx,ilevel)
+
+                            wwl_north( 1  ,1, 2) = wwl_north( 1  ,1, 2) &
+                    ! n=0
+                               & + wwm_north( 1  ,1, 2) * shml( 0,irz,iry,irx,ilevel) &
+                    ! n=1
+                               & + wwm_north( 2  ,1, 2) * shml( 1,irz,iry,irx,ilevel) &
+                    ! n=2
+                               & + wwm_north( 4  ,1, 2) * shml( 2,irz,iry,irx,ilevel) &
+                    ! n=3
+                               & + wwm_north( 7  ,1, 2) * shml( 3,irz,iry,irx,ilevel) &
+                    ! n=4
+                               & + wwm_north(11  ,1, 2) * shml( 4,irz,iry,irx,ilevel)
+
+                            wwl_north( 1  ,2, 2) = wwl_north( 1  ,2, 2) &
+                    ! n=0
+                               & + wwm_north( 1  ,2, 2) * shml( 0,irz,iry,irx,ilevel) &
+                    ! n=1
+                               & + wwm_north( 2  ,2, 2) * shml( 1,irz,iry,irx,ilevel) &
+                    ! n=2
+                               & + wwm_north( 4  ,2, 2) * shml( 2,irz,iry,irx,ilevel) &
+                    ! n=3
+                               & + wwm_north( 7  ,2, 2) * shml( 3,irz,iry,irx,ilevel) &
+                    ! n=4
+                               & + wwm_north(11  ,2, 2) * shml( 4,irz,iry,irx,ilevel)
+
+                            wwl_north( 1  ,1, 3) = wwl_north( 1  ,1, 3) &
+                    ! n=0
+                               & + wwm_north( 1  ,1, 3) * shml( 0,irz,iry,irx,ilevel) &
+                    ! n=1
+                               & + wwm_north( 2  ,1, 3) * shml( 1,irz,iry,irx,ilevel) &
+                    ! n=2
+                               & + wwm_north( 4  ,1, 3) * shml( 2,irz,iry,irx,ilevel) &
+                    ! n=3
+                               & + wwm_north( 7  ,1, 3) * shml( 3,irz,iry,irx,ilevel) &
+                    ! n=4
+                               & + wwm_north(11  ,1, 3) * shml( 4,irz,iry,irx,ilevel)
+
+                            wwl_north( 1  ,2, 3) = wwl_north( 1  ,2, 3) &
+                    ! n=0
+                               & + wwm_north( 1  ,2, 3) * shml( 0,irz,iry,irx,ilevel) &
+                    ! n=1
+                               & + wwm_north( 2  ,2, 3) * shml( 1,irz,iry,irx,ilevel) &
+                    ! n=2
+                               & + wwm_north( 4  ,2, 3) * shml( 2,irz,iry,irx,ilevel) &
+                    ! n=3
+                               & + wwm_north( 7  ,2, 3) * shml( 3,irz,iry,irx,ilevel) &
+                    ! n=4
+                               & + wwm_north(11  ,2, 3) * shml( 4,irz,iry,irx,ilevel)
+
+                            wwl_north( 1  ,1, 4) = wwl_north( 1  ,1, 4) &
+                    ! n=0
+                               & + wwm_north( 1  ,1, 4) * shml( 0,irz,iry,irx,ilevel) &
+                    ! n=1
+                               & + wwm_north( 2  ,1, 4) * shml( 1,irz,iry,irx,ilevel) &
+                    ! n=2
+                               & + wwm_north( 4  ,1, 4) * shml( 2,irz,iry,irx,ilevel) &
+                    ! n=3
+                               & + wwm_north( 7  ,1, 4) * shml( 3,irz,iry,irx,ilevel) &
+                    ! n=4
+                               & + wwm_north(11  ,1, 4) * shml( 4,irz,iry,irx,ilevel)
+
+                            wwl_north( 1  ,2, 4) = wwl_north( 1  ,2, 4) &
+                    ! n=0
+                               & + wwm_north( 1  ,2, 4) * shml( 0,irz,iry,irx,ilevel) &
+                    ! n=1
+                               & + wwm_north( 2  ,2, 4) * shml( 1,irz,iry,irx,ilevel) &
+                    ! n=2
+                               & + wwm_north( 4  ,2, 4) * shml( 2,irz,iry,irx,ilevel) &
+                    ! n=3
+                               & + wwm_north( 7  ,2, 4) * shml( 3,irz,iry,irx,ilevel) &
+                    ! n=4
+                               & + wwm_north(11  ,2, 4) * shml( 4,irz,iry,irx,ilevel)
+
+                            wwl_north( 1  ,1, 5) = wwl_north( 1  ,1, 5) &
+                    ! n=0
+                               & + wwm_north( 1  ,1, 5) * shml( 0,irz,iry,irx,ilevel) &
+                    ! n=1
+                               & + wwm_north( 2  ,1, 5) * shml( 1,irz,iry,irx,ilevel) &
+                    ! n=2
+                               & + wwm_north( 4  ,1, 5) * shml( 2,irz,iry,irx,ilevel) &
+                    ! n=3
+                               & + wwm_north( 7  ,1, 5) * shml( 3,irz,iry,irx,ilevel) &
+                    ! n=4
+                               & + wwm_north(11  ,1, 5) * shml( 4,irz,iry,irx,ilevel)
+
+                            wwl_north( 1  ,2, 5) = wwl_north( 1  ,2, 5) &
+                    ! n=0
+                               & + wwm_north( 1  ,2, 5) * shml( 0,irz,iry,irx,ilevel) &
+                    ! n=1
+                               & + wwm_north( 2  ,2, 5) * shml( 1,irz,iry,irx,ilevel) &
+                    ! n=2
+                               & + wwm_north( 4  ,2, 5) * shml( 2,irz,iry,irx,ilevel) &
+                    ! n=3
+                               & + wwm_north( 7  ,2, 5) * shml( 3,irz,iry,irx,ilevel) &
+                    ! n=4
+                               & + wwm_north(11  ,2, 5) * shml( 4,irz,iry,irx,ilevel)
+
+                            wwl_north( 1  ,1, 6) = wwl_north( 1  ,1, 6) &
+                    ! n=0
+                               & + wwm_north( 1  ,1, 6) * shml( 0,irz,iry,irx,ilevel) &
+                    ! n=1
+                               & + wwm_north( 2  ,1, 6) * shml( 1,irz,iry,irx,ilevel) &
+                    ! n=2
+                               & + wwm_north( 4  ,1, 6) * shml( 2,irz,iry,irx,ilevel) &
+                    ! n=3
+                               & + wwm_north( 7  ,1, 6) * shml( 3,irz,iry,irx,ilevel) &
+                    ! n=4
+                               & + wwm_north(11  ,1, 6) * shml( 4,irz,iry,irx,ilevel)
+
+                            wwl_north( 1  ,2, 6) = wwl_north( 1  ,2, 6) &
+                    ! n=0
+                               & + wwm_north( 1  ,2, 6) * shml( 0,irz,iry,irx,ilevel) &
+                    ! n=1
+                               & + wwm_north( 2  ,2, 6) * shml( 1,irz,iry,irx,ilevel) &
+                    ! n=2
+                               & + wwm_north( 4  ,2, 6) * shml( 2,irz,iry,irx,ilevel) &
+                    ! n=3
+                               & + wwm_north( 7  ,2, 6) * shml( 3,irz,iry,irx,ilevel) &
+                    ! n=4
+                               & + wwm_north(11  ,2, 6) * shml( 4,irz,iry,irx,ilevel)
+
+                            wwl_north( 1  ,1, 7) = wwl_north( 1  ,1, 7) &
+                    ! n=0
+                               & + wwm_north( 1  ,1, 7) * shml( 0,irz,iry,irx,ilevel) &
+                    ! n=1
+                               & + wwm_north( 2  ,1, 7) * shml( 1,irz,iry,irx,ilevel) &
+                    ! n=2
+                               & + wwm_north( 4  ,1, 7) * shml( 2,irz,iry,irx,ilevel) &
+                    ! n=3
+                               & + wwm_north( 7  ,1, 7) * shml( 3,irz,iry,irx,ilevel) &
+                    ! n=4
+                               & + wwm_north(11  ,1, 7) * shml( 4,irz,iry,irx,ilevel)
+
+                            wwl_north( 1  ,2, 7) = wwl_north( 1  ,2, 7) &
+                    ! n=0
+                               & + wwm_north( 1  ,2, 7) * shml( 0,irz,iry,irx,ilevel) &
+                    ! n=1
+                               & + wwm_north( 2  ,2, 7) * shml( 1,irz,iry,irx,ilevel) &
+                    ! n=2
+                               & + wwm_north( 4  ,2, 7) * shml( 2,irz,iry,irx,ilevel) &
+                    ! n=3
+                               & + wwm_north( 7  ,2, 7) * shml( 3,irz,iry,irx,ilevel) &
+                    ! n=4
+                               & + wwm_north(11  ,2, 7) * shml( 4,irz,iry,irx,ilevel)
+
+                            wwl_north( 1  ,1, 8) = wwl_north( 1  ,1, 8) &
+                    ! n=0
+                               & + wwm_north( 1  ,1, 8) * shml( 0,irz,iry,irx,ilevel) &
+                    ! n=1
+                               & + wwm_north( 2  ,1, 8) * shml( 1,irz,iry,irx,ilevel) &
+                    ! n=2
+                               & + wwm_north( 4  ,1, 8) * shml( 2,irz,iry,irx,ilevel) &
+                    ! n=3
+                               & + wwm_north( 7  ,1, 8) * shml( 3,irz,iry,irx,ilevel) &
+                    ! n=4
+                               & + wwm_north(11  ,1, 8) * shml( 4,irz,iry,irx,ilevel)
+
+                            wwl_north( 1  ,2, 8) = wwl_north( 1  ,2, 8) &
+                    ! n=0
+                               & + wwm_north( 1  ,2, 8) * shml( 0,irz,iry,irx,ilevel) &
+                    ! n=1
+                               & + wwm_north( 2  ,2, 8) * shml( 1,irz,iry,irx,ilevel) &
+                    ! n=2
+                               & + wwm_north( 4  ,2, 8) * shml( 2,irz,iry,irx,ilevel) &
+                    ! n=3
+                               & + wwm_north( 7  ,2, 8) * shml( 3,irz,iry,irx,ilevel) &
+                    ! n=4
+                               & + wwm_north(11  ,2, 8) * shml( 4,irz,iry,irx,ilevel)
+
+                  ! j=1
+                        shml_n0 = shml( 1,irz,iry,irx,ilevel)
+                        shml_n1 = shml( 2,irz,iry,irx,ilevel)
+                        shml_n2 = shml( 3,irz,iry,irx,ilevel)
+                        shml_n3 = shml( 4,irz,iry,irx,ilevel)
+                        shml_n4 = shml( 5,irz,iry,irx,ilevel)
+!ocl simd_redundant_vl(5)
+                        do k=0,1
+                          tmp_1r = Czero; tmp_1i = Czero
+                          tmp_2r = Czero; tmp_2i = Czero
+                          tmp_3r = Czero; tmp_3i = Czero
+                          tmp_4r = Czero; tmp_4i = Czero
+                          tmp_5r = Czero; tmp_5i = Czero
+                          tmp_6r = Czero; tmp_6i = Czero
+                          tmp_7r = Czero; tmp_7i = Czero
+                          tmp_8r = Czero; tmp_8i = Czero
+                    ! n=0
+                          if(k < 1) then
+                            tmp_1r = tmp_1r + wwm_north( 1+k,1,1) * shml_n0
+                            tmp_1i = tmp_1i + wwm_north( 1+k,2,1) * shml_n0
+                            tmp_2r = tmp_2r + wwm_north( 1+k,1,2) * shml_n0
+                            tmp_2i = tmp_2i + wwm_north( 1+k,2,2) * shml_n0
+                            tmp_3r = tmp_3r + wwm_north( 1+k,1,3) * shml_n0
+                            tmp_3i = tmp_3i + wwm_north( 1+k,2,3) * shml_n0
+                            tmp_4r = tmp_4r + wwm_north( 1+k,1,4) * shml_n0
+                            tmp_4i = tmp_4i + wwm_north( 1+k,2,4) * shml_n0
+                            tmp_5r = tmp_5r + wwm_north( 1+k,1,5) * shml_n0
+                            tmp_5i = tmp_5i + wwm_north( 1+k,2,5) * shml_n0
+                            tmp_6r = tmp_6r + wwm_north( 1+k,1,6) * shml_n0
+                            tmp_6i = tmp_6i + wwm_north( 1+k,2,6) * shml_n0
+                            tmp_7r = tmp_7r + wwm_north( 1+k,1,7) * shml_n0
+                            tmp_7i = tmp_7i + wwm_north( 1+k,2,7) * shml_n0
+                            tmp_8r = tmp_8r + wwm_north( 1+k,1,8) * shml_n0
+                            tmp_8i = tmp_8i + wwm_north( 1+k,2,8) * shml_n0
+                          endif
+                    ! n=1
+                            tmp_1r = tmp_1r + wwm_north( 2+k,1,1) * shml_n1
+                            tmp_1i = tmp_1i + wwm_north( 2+k,2,1) * shml_n1
+                            tmp_2r = tmp_2r + wwm_north( 2+k,1,2) * shml_n1
+                            tmp_2i = tmp_2i + wwm_north( 2+k,2,2) * shml_n1
+                            tmp_3r = tmp_3r + wwm_north( 2+k,1,3) * shml_n1
+                            tmp_3i = tmp_3i + wwm_north( 2+k,2,3) * shml_n1
+                            tmp_4r = tmp_4r + wwm_north( 2+k,1,4) * shml_n1
+                            tmp_4i = tmp_4i + wwm_north( 2+k,2,4) * shml_n1
+                            tmp_5r = tmp_5r + wwm_north( 2+k,1,5) * shml_n1
+                            tmp_5i = tmp_5i + wwm_north( 2+k,2,5) * shml_n1
+                            tmp_6r = tmp_6r + wwm_north( 2+k,1,6) * shml_n1
+                            tmp_6i = tmp_6i + wwm_north( 2+k,2,6) * shml_n1
+                            tmp_7r = tmp_7r + wwm_north( 2+k,1,7) * shml_n1
+                            tmp_7i = tmp_7i + wwm_north( 2+k,2,7) * shml_n1
+                            tmp_8r = tmp_8r + wwm_north( 2+k,1,8) * shml_n1
+                            tmp_8i = tmp_8i + wwm_north( 2+k,2,8) * shml_n1
+                    ! n=2
+                            tmp_1r = tmp_1r + wwm_north( 4+k,1,1) * shml_n2
+                            tmp_1i = tmp_1i + wwm_north( 4+k,2,1) * shml_n2
+                            tmp_2r = tmp_2r + wwm_north( 4+k,1,2) * shml_n2
+                            tmp_2i = tmp_2i + wwm_north( 4+k,2,2) * shml_n2
+                            tmp_3r = tmp_3r + wwm_north( 4+k,1,3) * shml_n2
+                            tmp_3i = tmp_3i + wwm_north( 4+k,2,3) * shml_n2
+                            tmp_4r = tmp_4r + wwm_north( 4+k,1,4) * shml_n2
+                            tmp_4i = tmp_4i + wwm_north( 4+k,2,4) * shml_n2
+                            tmp_5r = tmp_5r + wwm_north( 4+k,1,5) * shml_n2
+                            tmp_5i = tmp_5i + wwm_north( 4+k,2,5) * shml_n2
+                            tmp_6r = tmp_6r + wwm_north( 4+k,1,6) * shml_n2
+                            tmp_6i = tmp_6i + wwm_north( 4+k,2,6) * shml_n2
+                            tmp_7r = tmp_7r + wwm_north( 4+k,1,7) * shml_n2
+                            tmp_7i = tmp_7i + wwm_north( 4+k,2,7) * shml_n2
+                            tmp_8r = tmp_8r + wwm_north( 4+k,1,8) * shml_n2
+                            tmp_8i = tmp_8i + wwm_north( 4+k,2,8) * shml_n2
+                    ! n=3
+                            tmp_1r = tmp_1r + wwm_north( 7+k,1,1) * shml_n3
+                            tmp_1i = tmp_1i + wwm_north( 7+k,2,1) * shml_n3
+                            tmp_2r = tmp_2r + wwm_north( 7+k,1,2) * shml_n3
+                            tmp_2i = tmp_2i + wwm_north( 7+k,2,2) * shml_n3
+                            tmp_3r = tmp_3r + wwm_north( 7+k,1,3) * shml_n3
+                            tmp_3i = tmp_3i + wwm_north( 7+k,2,3) * shml_n3
+                            tmp_4r = tmp_4r + wwm_north( 7+k,1,4) * shml_n3
+                            tmp_4i = tmp_4i + wwm_north( 7+k,2,4) * shml_n3
+                            tmp_5r = tmp_5r + wwm_north( 7+k,1,5) * shml_n3
+                            tmp_5i = tmp_5i + wwm_north( 7+k,2,5) * shml_n3
+                            tmp_6r = tmp_6r + wwm_north( 7+k,1,6) * shml_n3
+                            tmp_6i = tmp_6i + wwm_north( 7+k,2,6) * shml_n3
+                            tmp_7r = tmp_7r + wwm_north( 7+k,1,7) * shml_n3
+                            tmp_7i = tmp_7i + wwm_north( 7+k,2,7) * shml_n3
+                            tmp_8r = tmp_8r + wwm_north( 7+k,1,8) * shml_n3
+                            tmp_8i = tmp_8i + wwm_north( 7+k,2,8) * shml_n3
+                    ! n=4
+                            tmp_1r = tmp_1r + wwm_north(11+k,1,1) * shml_n4
+                            tmp_1i = tmp_1i + wwm_north(11+k,2,1) * shml_n4
+                            tmp_2r = tmp_2r + wwm_north(11+k,1,2) * shml_n4
+                            tmp_2i = tmp_2i + wwm_north(11+k,2,2) * shml_n4
+                            tmp_3r = tmp_3r + wwm_north(11+k,1,3) * shml_n4
+                            tmp_3i = tmp_3i + wwm_north(11+k,2,3) * shml_n4
+                            tmp_4r = tmp_4r + wwm_north(11+k,1,4) * shml_n4
+                            tmp_4i = tmp_4i + wwm_north(11+k,2,4) * shml_n4
+                            tmp_5r = tmp_5r + wwm_north(11+k,1,5) * shml_n4
+                            tmp_5i = tmp_5i + wwm_north(11+k,2,5) * shml_n4
+                            tmp_6r = tmp_6r + wwm_north(11+k,1,6) * shml_n4
+                            tmp_6i = tmp_6i + wwm_north(11+k,2,6) * shml_n4
+                            tmp_7r = tmp_7r + wwm_north(11+k,1,7) * shml_n4
+                            tmp_7i = tmp_7i + wwm_north(11+k,2,7) * shml_n4
+                            tmp_8r = tmp_8r + wwm_north(11+k,1,8) * shml_n4
+                            tmp_8i = tmp_8i + wwm_north(11+k,2,8) * shml_n4
+
+                            wwl_north( 2+k,1,1) = wwl_north( 2+k,1,1) + tmp_1r
+                            wwl_north( 2+k,2,1) = wwl_north( 2+k,2,1) + tmp_1i
+                            wwl_north( 2+k,1,2) = wwl_north( 2+k,1,2) + tmp_2r
+                            wwl_north( 2+k,2,2) = wwl_north( 2+k,2,2) + tmp_2i
+                            wwl_north( 2+k,1,3) = wwl_north( 2+k,1,3) + tmp_3r
+                            wwl_north( 2+k,2,3) = wwl_north( 2+k,2,3) + tmp_3i
+                            wwl_north( 2+k,1,4) = wwl_north( 2+k,1,4) + tmp_4r
+                            wwl_north( 2+k,2,4) = wwl_north( 2+k,2,4) + tmp_4i
+                            wwl_north( 2+k,1,5) = wwl_north( 2+k,1,5) + tmp_5r
+                            wwl_north( 2+k,2,5) = wwl_north( 2+k,2,5) + tmp_5i
+                            wwl_north( 2+k,1,6) = wwl_north( 2+k,1,6) + tmp_6r
+                            wwl_north( 2+k,2,6) = wwl_north( 2+k,2,6) + tmp_6i
+                            wwl_north( 2+k,1,7) = wwl_north( 2+k,1,7) + tmp_7r
+                            wwl_north( 2+k,2,7) = wwl_north( 2+k,2,7) + tmp_7i
+                            wwl_north( 2+k,1,8) = wwl_north( 2+k,1,8) + tmp_8r
+                            wwl_north( 2+k,2,8) = wwl_north( 2+k,2,8) + tmp_8i
+
+                        end do
+
+                  ! j=2
+                        shml_n0 = shml( 2,irz,iry,irx,ilevel)
+                        shml_n1 = shml( 3,irz,iry,irx,ilevel)
+                        shml_n2 = shml( 4,irz,iry,irx,ilevel)
+                        shml_n3 = shml( 5,irz,iry,irx,ilevel)
+                        shml_n4 = shml( 6,irz,iry,irx,ilevel)
+!ocl simd_redundant_vl(5)
+                        do k=0,2
+                          tmp_1r = Czero; tmp_1i = Czero
+                          tmp_2r = Czero; tmp_2i = Czero
+                          tmp_3r = Czero; tmp_3i = Czero
+                          tmp_4r = Czero; tmp_4i = Czero
+                          tmp_5r = Czero; tmp_5i = Czero
+                          tmp_6r = Czero; tmp_6i = Czero
+                          tmp_7r = Czero; tmp_7i = Czero
+                          tmp_8r = Czero; tmp_8i = Czero
+                    ! n=0
+                          if(k < 1) then
+                            tmp_1r = tmp_1r + wwm_north( 1+k,1,1) * shml_n0
+                            tmp_1i = tmp_1i + wwm_north( 1+k,2,1) * shml_n0
+                            tmp_2r = tmp_2r + wwm_north( 1+k,1,2) * shml_n0
+                            tmp_2i = tmp_2i + wwm_north( 1+k,2,2) * shml_n0
+                            tmp_3r = tmp_3r + wwm_north( 1+k,1,3) * shml_n0
+                            tmp_3i = tmp_3i + wwm_north( 1+k,2,3) * shml_n0
+                            tmp_4r = tmp_4r + wwm_north( 1+k,1,4) * shml_n0
+                            tmp_4i = tmp_4i + wwm_north( 1+k,2,4) * shml_n0
+                            tmp_5r = tmp_5r + wwm_north( 1+k,1,5) * shml_n0
+                            tmp_5i = tmp_5i + wwm_north( 1+k,2,5) * shml_n0
+                            tmp_6r = tmp_6r + wwm_north( 1+k,1,6) * shml_n0
+                            tmp_6i = tmp_6i + wwm_north( 1+k,2,6) * shml_n0
+                            tmp_7r = tmp_7r + wwm_north( 1+k,1,7) * shml_n0
+                            tmp_7i = tmp_7i + wwm_north( 1+k,2,7) * shml_n0
+                            tmp_8r = tmp_8r + wwm_north( 1+k,1,8) * shml_n0
+                            tmp_8i = tmp_8i + wwm_north( 1+k,2,8) * shml_n0
+                          endif
+                    ! n=1
+                          if(k < 2) then
+                            tmp_1r = tmp_1r + wwm_north( 2+k,1,1) * shml_n1
+                            tmp_1i = tmp_1i + wwm_north( 2+k,2,1) * shml_n1
+                            tmp_2r = tmp_2r + wwm_north( 2+k,1,2) * shml_n1
+                            tmp_2i = tmp_2i + wwm_north( 2+k,2,2) * shml_n1
+                            tmp_3r = tmp_3r + wwm_north( 2+k,1,3) * shml_n1
+                            tmp_3i = tmp_3i + wwm_north( 2+k,2,3) * shml_n1
+                            tmp_4r = tmp_4r + wwm_north( 2+k,1,4) * shml_n1
+                            tmp_4i = tmp_4i + wwm_north( 2+k,2,4) * shml_n1
+                            tmp_5r = tmp_5r + wwm_north( 2+k,1,5) * shml_n1
+                            tmp_5i = tmp_5i + wwm_north( 2+k,2,5) * shml_n1
+                            tmp_6r = tmp_6r + wwm_north( 2+k,1,6) * shml_n1
+                            tmp_6i = tmp_6i + wwm_north( 2+k,2,6) * shml_n1
+                            tmp_7r = tmp_7r + wwm_north( 2+k,1,7) * shml_n1
+                            tmp_7i = tmp_7i + wwm_north( 2+k,2,7) * shml_n1
+                            tmp_8r = tmp_8r + wwm_north( 2+k,1,8) * shml_n1
+                            tmp_8i = tmp_8i + wwm_north( 2+k,2,8) * shml_n1
+                          endif
+                    ! n=2
+                            tmp_1r = tmp_1r + wwm_north( 4+k,1,1) * shml_n2
+                            tmp_1i = tmp_1i + wwm_north( 4+k,2,1) * shml_n2
+                            tmp_2r = tmp_2r + wwm_north( 4+k,1,2) * shml_n2
+                            tmp_2i = tmp_2i + wwm_north( 4+k,2,2) * shml_n2
+                            tmp_3r = tmp_3r + wwm_north( 4+k,1,3) * shml_n2
+                            tmp_3i = tmp_3i + wwm_north( 4+k,2,3) * shml_n2
+                            tmp_4r = tmp_4r + wwm_north( 4+k,1,4) * shml_n2
+                            tmp_4i = tmp_4i + wwm_north( 4+k,2,4) * shml_n2
+                            tmp_5r = tmp_5r + wwm_north( 4+k,1,5) * shml_n2
+                            tmp_5i = tmp_5i + wwm_north( 4+k,2,5) * shml_n2
+                            tmp_6r = tmp_6r + wwm_north( 4+k,1,6) * shml_n2
+                            tmp_6i = tmp_6i + wwm_north( 4+k,2,6) * shml_n2
+                            tmp_7r = tmp_7r + wwm_north( 4+k,1,7) * shml_n2
+                            tmp_7i = tmp_7i + wwm_north( 4+k,2,7) * shml_n2
+                            tmp_8r = tmp_8r + wwm_north( 4+k,1,8) * shml_n2
+                            tmp_8i = tmp_8i + wwm_north( 4+k,2,8) * shml_n2
+                    ! n=3
+                            tmp_1r = tmp_1r + wwm_north( 7+k,1,1) * shml_n3
+                            tmp_1i = tmp_1i + wwm_north( 7+k,2,1) * shml_n3
+                            tmp_2r = tmp_2r + wwm_north( 7+k,1,2) * shml_n3
+                            tmp_2i = tmp_2i + wwm_north( 7+k,2,2) * shml_n3
+                            tmp_3r = tmp_3r + wwm_north( 7+k,1,3) * shml_n3
+                            tmp_3i = tmp_3i + wwm_north( 7+k,2,3) * shml_n3
+                            tmp_4r = tmp_4r + wwm_north( 7+k,1,4) * shml_n3
+                            tmp_4i = tmp_4i + wwm_north( 7+k,2,4) * shml_n3
+                            tmp_5r = tmp_5r + wwm_north( 7+k,1,5) * shml_n3
+                            tmp_5i = tmp_5i + wwm_north( 7+k,2,5) * shml_n3
+                            tmp_6r = tmp_6r + wwm_north( 7+k,1,6) * shml_n3
+                            tmp_6i = tmp_6i + wwm_north( 7+k,2,6) * shml_n3
+                            tmp_7r = tmp_7r + wwm_north( 7+k,1,7) * shml_n3
+                            tmp_7i = tmp_7i + wwm_north( 7+k,2,7) * shml_n3
+                            tmp_8r = tmp_8r + wwm_north( 7+k,1,8) * shml_n3
+                            tmp_8i = tmp_8i + wwm_north( 7+k,2,8) * shml_n3
+                    ! n=4
+                            tmp_1r = tmp_1r + wwm_north(11+k,1,1) * shml_n4
+                            tmp_1i = tmp_1i + wwm_north(11+k,2,1) * shml_n4
+                            tmp_2r = tmp_2r + wwm_north(11+k,1,2) * shml_n4
+                            tmp_2i = tmp_2i + wwm_north(11+k,2,2) * shml_n4
+                            tmp_3r = tmp_3r + wwm_north(11+k,1,3) * shml_n4
+                            tmp_3i = tmp_3i + wwm_north(11+k,2,3) * shml_n4
+                            tmp_4r = tmp_4r + wwm_north(11+k,1,4) * shml_n4
+                            tmp_4i = tmp_4i + wwm_north(11+k,2,4) * shml_n4
+                            tmp_5r = tmp_5r + wwm_north(11+k,1,5) * shml_n4
+                            tmp_5i = tmp_5i + wwm_north(11+k,2,5) * shml_n4
+                            tmp_6r = tmp_6r + wwm_north(11+k,1,6) * shml_n4
+                            tmp_6i = tmp_6i + wwm_north(11+k,2,6) * shml_n4
+                            tmp_7r = tmp_7r + wwm_north(11+k,1,7) * shml_n4
+                            tmp_7i = tmp_7i + wwm_north(11+k,2,7) * shml_n4
+                            tmp_8r = tmp_8r + wwm_north(11+k,1,8) * shml_n4
+                            tmp_8i = tmp_8i + wwm_north(11+k,2,8) * shml_n4
+
+                            wwl_north( 4+k,1,1) = wwl_north( 4+k,1,1) + tmp_1r
+                            wwl_north( 4+k,2,1) = wwl_north( 4+k,2,1) + tmp_1i
+                            wwl_north( 4+k,1,2) = wwl_north( 4+k,1,2) + tmp_2r
+                            wwl_north( 4+k,2,2) = wwl_north( 4+k,2,2) + tmp_2i
+                            wwl_north( 4+k,1,3) = wwl_north( 4+k,1,3) + tmp_3r
+                            wwl_north( 4+k,2,3) = wwl_north( 4+k,2,3) + tmp_3i
+                            wwl_north( 4+k,1,4) = wwl_north( 4+k,1,4) + tmp_4r
+                            wwl_north( 4+k,2,4) = wwl_north( 4+k,2,4) + tmp_4i
+                            wwl_north( 4+k,1,5) = wwl_north( 4+k,1,5) + tmp_5r
+                            wwl_north( 4+k,2,5) = wwl_north( 4+k,2,5) + tmp_5i
+                            wwl_north( 4+k,1,6) = wwl_north( 4+k,1,6) + tmp_6r
+                            wwl_north( 4+k,2,6) = wwl_north( 4+k,2,6) + tmp_6i
+                            wwl_north( 4+k,1,7) = wwl_north( 4+k,1,7) + tmp_7r
+                            wwl_north( 4+k,2,7) = wwl_north( 4+k,2,7) + tmp_7i
+                            wwl_north( 4+k,1,8) = wwl_north( 4+k,1,8) + tmp_8r
+                            wwl_north( 4+k,2,8) = wwl_north( 4+k,2,8) + tmp_8i
+
+                        end do
+
+                  ! j=3
+                        shml_n0 = shml( 3,irz,iry,irx,ilevel)
+                        shml_n1 = shml( 4,irz,iry,irx,ilevel)
+                        shml_n2 = shml( 5,irz,iry,irx,ilevel)
+                        shml_n3 = shml( 6,irz,iry,irx,ilevel)
+                        shml_n4 = shml( 7,irz,iry,irx,ilevel)
+!ocl simd_redundant_vl(5)
+                        do k=0,3
+                          tmp_1r = Czero; tmp_1i = Czero
+                          tmp_2r = Czero; tmp_2i = Czero
+                          tmp_3r = Czero; tmp_3i = Czero
+                          tmp_4r = Czero; tmp_4i = Czero
+                          tmp_5r = Czero; tmp_5i = Czero
+                          tmp_6r = Czero; tmp_6i = Czero
+                          tmp_7r = Czero; tmp_7i = Czero
+                          tmp_8r = Czero; tmp_8i = Czero
+                    ! n=0
+                          if(k < 1) then
+                            tmp_1r = tmp_1r + wwm_north( 1+k,1,1) * shml_n0
+                            tmp_1i = tmp_1i + wwm_north( 1+k,2,1) * shml_n0
+                            tmp_2r = tmp_2r + wwm_north( 1+k,1,2) * shml_n0
+                            tmp_2i = tmp_2i + wwm_north( 1+k,2,2) * shml_n0
+                            tmp_3r = tmp_3r + wwm_north( 1+k,1,3) * shml_n0
+                            tmp_3i = tmp_3i + wwm_north( 1+k,2,3) * shml_n0
+                            tmp_4r = tmp_4r + wwm_north( 1+k,1,4) * shml_n0
+                            tmp_4i = tmp_4i + wwm_north( 1+k,2,4) * shml_n0
+                            tmp_5r = tmp_5r + wwm_north( 1+k,1,5) * shml_n0
+                            tmp_5i = tmp_5i + wwm_north( 1+k,2,5) * shml_n0
+                            tmp_6r = tmp_6r + wwm_north( 1+k,1,6) * shml_n0
+                            tmp_6i = tmp_6i + wwm_north( 1+k,2,6) * shml_n0
+                            tmp_7r = tmp_7r + wwm_north( 1+k,1,7) * shml_n0
+                            tmp_7i = tmp_7i + wwm_north( 1+k,2,7) * shml_n0
+                            tmp_8r = tmp_8r + wwm_north( 1+k,1,8) * shml_n0
+                            tmp_8i = tmp_8i + wwm_north( 1+k,2,8) * shml_n0
+                          endif
+                    ! n=1
+                          if(k < 2) then
+                            tmp_1r = tmp_1r + wwm_north( 2+k,1,1) * shml_n1
+                            tmp_1i = tmp_1i + wwm_north( 2+k,2,1) * shml_n1
+                            tmp_2r = tmp_2r + wwm_north( 2+k,1,2) * shml_n1
+                            tmp_2i = tmp_2i + wwm_north( 2+k,2,2) * shml_n1
+                            tmp_3r = tmp_3r + wwm_north( 2+k,1,3) * shml_n1
+                            tmp_3i = tmp_3i + wwm_north( 2+k,2,3) * shml_n1
+                            tmp_4r = tmp_4r + wwm_north( 2+k,1,4) * shml_n1
+                            tmp_4i = tmp_4i + wwm_north( 2+k,2,4) * shml_n1
+                            tmp_5r = tmp_5r + wwm_north( 2+k,1,5) * shml_n1
+                            tmp_5i = tmp_5i + wwm_north( 2+k,2,5) * shml_n1
+                            tmp_6r = tmp_6r + wwm_north( 2+k,1,6) * shml_n1
+                            tmp_6i = tmp_6i + wwm_north( 2+k,2,6) * shml_n1
+                            tmp_7r = tmp_7r + wwm_north( 2+k,1,7) * shml_n1
+                            tmp_7i = tmp_7i + wwm_north( 2+k,2,7) * shml_n1
+                            tmp_8r = tmp_8r + wwm_north( 2+k,1,8) * shml_n1
+                            tmp_8i = tmp_8i + wwm_north( 2+k,2,8) * shml_n1
+                          endif
+                    ! n=2
+                          if(k < 3) then
+                            tmp_1r = tmp_1r + wwm_north( 4+k,1,1) * shml_n2
+                            tmp_1i = tmp_1i + wwm_north( 4+k,2,1) * shml_n2
+                            tmp_2r = tmp_2r + wwm_north( 4+k,1,2) * shml_n2
+                            tmp_2i = tmp_2i + wwm_north( 4+k,2,2) * shml_n2
+                            tmp_3r = tmp_3r + wwm_north( 4+k,1,3) * shml_n2
+                            tmp_3i = tmp_3i + wwm_north( 4+k,2,3) * shml_n2
+                            tmp_4r = tmp_4r + wwm_north( 4+k,1,4) * shml_n2
+                            tmp_4i = tmp_4i + wwm_north( 4+k,2,4) * shml_n2
+                            tmp_5r = tmp_5r + wwm_north( 4+k,1,5) * shml_n2
+                            tmp_5i = tmp_5i + wwm_north( 4+k,2,5) * shml_n2
+                            tmp_6r = tmp_6r + wwm_north( 4+k,1,6) * shml_n2
+                            tmp_6i = tmp_6i + wwm_north( 4+k,2,6) * shml_n2
+                            tmp_7r = tmp_7r + wwm_north( 4+k,1,7) * shml_n2
+                            tmp_7i = tmp_7i + wwm_north( 4+k,2,7) * shml_n2
+                            tmp_8r = tmp_8r + wwm_north( 4+k,1,8) * shml_n2
+                            tmp_8i = tmp_8i + wwm_north( 4+k,2,8) * shml_n2
+                          endif
+                    ! n=3
+                            tmp_1r = tmp_1r + wwm_north( 7+k,1,1) * shml_n3
+                            tmp_1i = tmp_1i + wwm_north( 7+k,2,1) * shml_n3
+                            tmp_2r = tmp_2r + wwm_north( 7+k,1,2) * shml_n3
+                            tmp_2i = tmp_2i + wwm_north( 7+k,2,2) * shml_n3
+                            tmp_3r = tmp_3r + wwm_north( 7+k,1,3) * shml_n3
+                            tmp_3i = tmp_3i + wwm_north( 7+k,2,3) * shml_n3
+                            tmp_4r = tmp_4r + wwm_north( 7+k,1,4) * shml_n3
+                            tmp_4i = tmp_4i + wwm_north( 7+k,2,4) * shml_n3
+                            tmp_5r = tmp_5r + wwm_north( 7+k,1,5) * shml_n3
+                            tmp_5i = tmp_5i + wwm_north( 7+k,2,5) * shml_n3
+                            tmp_6r = tmp_6r + wwm_north( 7+k,1,6) * shml_n3
+                            tmp_6i = tmp_6i + wwm_north( 7+k,2,6) * shml_n3
+                            tmp_7r = tmp_7r + wwm_north( 7+k,1,7) * shml_n3
+                            tmp_7i = tmp_7i + wwm_north( 7+k,2,7) * shml_n3
+                            tmp_8r = tmp_8r + wwm_north( 7+k,1,8) * shml_n3
+                            tmp_8i = tmp_8i + wwm_north( 7+k,2,8) * shml_n3
+                    ! n=4
+                            tmp_1r = tmp_1r + wwm_north(11+k,1,1) * shml_n4
+                            tmp_1i = tmp_1i + wwm_north(11+k,2,1) * shml_n4
+                            tmp_2r = tmp_2r + wwm_north(11+k,1,2) * shml_n4
+                            tmp_2i = tmp_2i + wwm_north(11+k,2,2) * shml_n4
+                            tmp_3r = tmp_3r + wwm_north(11+k,1,3) * shml_n4
+                            tmp_3i = tmp_3i + wwm_north(11+k,2,3) * shml_n4
+                            tmp_4r = tmp_4r + wwm_north(11+k,1,4) * shml_n4
+                            tmp_4i = tmp_4i + wwm_north(11+k,2,4) * shml_n4
+                            tmp_5r = tmp_5r + wwm_north(11+k,1,5) * shml_n4
+                            tmp_5i = tmp_5i + wwm_north(11+k,2,5) * shml_n4
+                            tmp_6r = tmp_6r + wwm_north(11+k,1,6) * shml_n4
+                            tmp_6i = tmp_6i + wwm_north(11+k,2,6) * shml_n4
+                            tmp_7r = tmp_7r + wwm_north(11+k,1,7) * shml_n4
+                            tmp_7i = tmp_7i + wwm_north(11+k,2,7) * shml_n4
+                            tmp_8r = tmp_8r + wwm_north(11+k,1,8) * shml_n4
+                            tmp_8i = tmp_8i + wwm_north(11+k,2,8) * shml_n4
+
+                            wwl_north( 7+k,1,1) = wwl_north( 7+k,1,1) + tmp_1r
+                            wwl_north( 7+k,2,1) = wwl_north( 7+k,2,1) + tmp_1i
+                            wwl_north( 7+k,1,2) = wwl_north( 7+k,1,2) + tmp_2r
+                            wwl_north( 7+k,2,2) = wwl_north( 7+k,2,2) + tmp_2i
+                            wwl_north( 7+k,1,3) = wwl_north( 7+k,1,3) + tmp_3r
+                            wwl_north( 7+k,2,3) = wwl_north( 7+k,2,3) + tmp_3i
+                            wwl_north( 7+k,1,4) = wwl_north( 7+k,1,4) + tmp_4r
+                            wwl_north( 7+k,2,4) = wwl_north( 7+k,2,4) + tmp_4i
+                            wwl_north( 7+k,1,5) = wwl_north( 7+k,1,5) + tmp_5r
+                            wwl_north( 7+k,2,5) = wwl_north( 7+k,2,5) + tmp_5i
+                            wwl_north( 7+k,1,6) = wwl_north( 7+k,1,6) + tmp_6r
+                            wwl_north( 7+k,2,6) = wwl_north( 7+k,2,6) + tmp_6i
+                            wwl_north( 7+k,1,7) = wwl_north( 7+k,1,7) + tmp_7r
+                            wwl_north( 7+k,2,7) = wwl_north( 7+k,2,7) + tmp_7i
+                            wwl_north( 7+k,1,8) = wwl_north( 7+k,1,8) + tmp_8r
+                            wwl_north( 7+k,2,8) = wwl_north( 7+k,2,8) + tmp_8i
+
+                        end do
+
+                  ! j=4
+                        shml_n0 = shml( 4,irz,iry,irx,ilevel)
+                        shml_n1 = shml( 5,irz,iry,irx,ilevel)
+                        shml_n2 = shml( 6,irz,iry,irx,ilevel)
+                        shml_n3 = shml( 7,irz,iry,irx,ilevel)
+                        shml_n4 = shml( 8,irz,iry,irx,ilevel)
+!ocl simd_redundant_vl(5)
+                        do k=0,4
+                          tmp_1r = Czero; tmp_1i = Czero
+                          tmp_2r = Czero; tmp_2i = Czero
+                          tmp_3r = Czero; tmp_3i = Czero
+                          tmp_4r = Czero; tmp_4i = Czero
+                          tmp_5r = Czero; tmp_5i = Czero
+                          tmp_6r = Czero; tmp_6i = Czero
+                          tmp_7r = Czero; tmp_7i = Czero
+                          tmp_8r = Czero; tmp_8i = Czero
+                    ! n=0
+                          if(k < 1) then
+                            tmp_1r = tmp_1r + wwm_north( 1+k,1,1) * shml_n0
+                            tmp_1i = tmp_1i + wwm_north( 1+k,2,1) * shml_n0
+                            tmp_2r = tmp_2r + wwm_north( 1+k,1,2) * shml_n0
+                            tmp_2i = tmp_2i + wwm_north( 1+k,2,2) * shml_n0
+                            tmp_3r = tmp_3r + wwm_north( 1+k,1,3) * shml_n0
+                            tmp_3i = tmp_3i + wwm_north( 1+k,2,3) * shml_n0
+                            tmp_4r = tmp_4r + wwm_north( 1+k,1,4) * shml_n0
+                            tmp_4i = tmp_4i + wwm_north( 1+k,2,4) * shml_n0
+                            tmp_5r = tmp_5r + wwm_north( 1+k,1,5) * shml_n0
+                            tmp_5i = tmp_5i + wwm_north( 1+k,2,5) * shml_n0
+                            tmp_6r = tmp_6r + wwm_north( 1+k,1,6) * shml_n0
+                            tmp_6i = tmp_6i + wwm_north( 1+k,2,6) * shml_n0
+                            tmp_7r = tmp_7r + wwm_north( 1+k,1,7) * shml_n0
+                            tmp_7i = tmp_7i + wwm_north( 1+k,2,7) * shml_n0
+                            tmp_8r = tmp_8r + wwm_north( 1+k,1,8) * shml_n0
+                            tmp_8i = tmp_8i + wwm_north( 1+k,2,8) * shml_n0
+                          endif
+                    ! n=1
+                          if(k < 2) then
+                            tmp_1r = tmp_1r + wwm_north( 2+k,1,1) * shml_n1
+                            tmp_1i = tmp_1i + wwm_north( 2+k,2,1) * shml_n1
+                            tmp_2r = tmp_2r + wwm_north( 2+k,1,2) * shml_n1
+                            tmp_2i = tmp_2i + wwm_north( 2+k,2,2) * shml_n1
+                            tmp_3r = tmp_3r + wwm_north( 2+k,1,3) * shml_n1
+                            tmp_3i = tmp_3i + wwm_north( 2+k,2,3) * shml_n1
+                            tmp_4r = tmp_4r + wwm_north( 2+k,1,4) * shml_n1
+                            tmp_4i = tmp_4i + wwm_north( 2+k,2,4) * shml_n1
+                            tmp_5r = tmp_5r + wwm_north( 2+k,1,5) * shml_n1
+                            tmp_5i = tmp_5i + wwm_north( 2+k,2,5) * shml_n1
+                            tmp_6r = tmp_6r + wwm_north( 2+k,1,6) * shml_n1
+                            tmp_6i = tmp_6i + wwm_north( 2+k,2,6) * shml_n1
+                            tmp_7r = tmp_7r + wwm_north( 2+k,1,7) * shml_n1
+                            tmp_7i = tmp_7i + wwm_north( 2+k,2,7) * shml_n1
+                            tmp_8r = tmp_8r + wwm_north( 2+k,1,8) * shml_n1
+                            tmp_8i = tmp_8i + wwm_north( 2+k,2,8) * shml_n1
+                          endif
+                    ! n=2
+                          if(k < 3) then
+                            tmp_1r = tmp_1r + wwm_north( 4+k,1,1) * shml_n2
+                            tmp_1i = tmp_1i + wwm_north( 4+k,2,1) * shml_n2
+                            tmp_2r = tmp_2r + wwm_north( 4+k,1,2) * shml_n2
+                            tmp_2i = tmp_2i + wwm_north( 4+k,2,2) * shml_n2
+                            tmp_3r = tmp_3r + wwm_north( 4+k,1,3) * shml_n2
+                            tmp_3i = tmp_3i + wwm_north( 4+k,2,3) * shml_n2
+                            tmp_4r = tmp_4r + wwm_north( 4+k,1,4) * shml_n2
+                            tmp_4i = tmp_4i + wwm_north( 4+k,2,4) * shml_n2
+                            tmp_5r = tmp_5r + wwm_north( 4+k,1,5) * shml_n2
+                            tmp_5i = tmp_5i + wwm_north( 4+k,2,5) * shml_n2
+                            tmp_6r = tmp_6r + wwm_north( 4+k,1,6) * shml_n2
+                            tmp_6i = tmp_6i + wwm_north( 4+k,2,6) * shml_n2
+                            tmp_7r = tmp_7r + wwm_north( 4+k,1,7) * shml_n2
+                            tmp_7i = tmp_7i + wwm_north( 4+k,2,7) * shml_n2
+                            tmp_8r = tmp_8r + wwm_north( 4+k,1,8) * shml_n2
+                            tmp_8i = tmp_8i + wwm_north( 4+k,2,8) * shml_n2
+                          endif
+                    ! n=3
+                          if(k < 4) then
+                            tmp_1r = tmp_1r + wwm_north( 7+k,1,1) * shml_n3
+                            tmp_1i = tmp_1i + wwm_north( 7+k,2,1) * shml_n3
+                            tmp_2r = tmp_2r + wwm_north( 7+k,1,2) * shml_n3
+                            tmp_2i = tmp_2i + wwm_north( 7+k,2,2) * shml_n3
+                            tmp_3r = tmp_3r + wwm_north( 7+k,1,3) * shml_n3
+                            tmp_3i = tmp_3i + wwm_north( 7+k,2,3) * shml_n3
+                            tmp_4r = tmp_4r + wwm_north( 7+k,1,4) * shml_n3
+                            tmp_4i = tmp_4i + wwm_north( 7+k,2,4) * shml_n3
+                            tmp_5r = tmp_5r + wwm_north( 7+k,1,5) * shml_n3
+                            tmp_5i = tmp_5i + wwm_north( 7+k,2,5) * shml_n3
+                            tmp_6r = tmp_6r + wwm_north( 7+k,1,6) * shml_n3
+                            tmp_6i = tmp_6i + wwm_north( 7+k,2,6) * shml_n3
+                            tmp_7r = tmp_7r + wwm_north( 7+k,1,7) * shml_n3
+                            tmp_7i = tmp_7i + wwm_north( 7+k,2,7) * shml_n3
+                            tmp_8r = tmp_8r + wwm_north( 7+k,1,8) * shml_n3
+                            tmp_8i = tmp_8i + wwm_north( 7+k,2,8) * shml_n3
+                          endif
+                    ! n=4
+                            tmp_1r = tmp_1r + wwm_north(11+k,1,1) * shml_n4
+                            tmp_1i = tmp_1i + wwm_north(11+k,2,1) * shml_n4
+                            tmp_2r = tmp_2r + wwm_north(11+k,1,2) * shml_n4
+                            tmp_2i = tmp_2i + wwm_north(11+k,2,2) * shml_n4
+                            tmp_3r = tmp_3r + wwm_north(11+k,1,3) * shml_n4
+                            tmp_3i = tmp_3i + wwm_north(11+k,2,3) * shml_n4
+                            tmp_4r = tmp_4r + wwm_north(11+k,1,4) * shml_n4
+                            tmp_4i = tmp_4i + wwm_north(11+k,2,4) * shml_n4
+                            tmp_5r = tmp_5r + wwm_north(11+k,1,5) * shml_n4
+                            tmp_5i = tmp_5i + wwm_north(11+k,2,5) * shml_n4
+                            tmp_6r = tmp_6r + wwm_north(11+k,1,6) * shml_n4
+                            tmp_6i = tmp_6i + wwm_north(11+k,2,6) * shml_n4
+                            tmp_7r = tmp_7r + wwm_north(11+k,1,7) * shml_n4
+                            tmp_7i = tmp_7i + wwm_north(11+k,2,7) * shml_n4
+                            tmp_8r = tmp_8r + wwm_north(11+k,1,8) * shml_n4
+                            tmp_8i = tmp_8i + wwm_north(11+k,2,8) * shml_n4
+
+                            wwl_north(11+k,1,1) = wwl_north(11+k,1,1) + tmp_1r
+                            wwl_north(11+k,2,1) = wwl_north(11+k,2,1) + tmp_1i
+                            wwl_north(11+k,1,2) = wwl_north(11+k,1,2) + tmp_2r
+                            wwl_north(11+k,2,2) = wwl_north(11+k,2,2) + tmp_2i
+                            wwl_north(11+k,1,3) = wwl_north(11+k,1,3) + tmp_3r
+                            wwl_north(11+k,2,3) = wwl_north(11+k,2,3) + tmp_3i
+                            wwl_north(11+k,1,4) = wwl_north(11+k,1,4) + tmp_4r
+                            wwl_north(11+k,2,4) = wwl_north(11+k,2,4) + tmp_4i
+                            wwl_north(11+k,1,5) = wwl_north(11+k,1,5) + tmp_5r
+                            wwl_north(11+k,2,5) = wwl_north(11+k,2,5) + tmp_5i
+                            wwl_north(11+k,1,6) = wwl_north(11+k,1,6) + tmp_6r
+                            wwl_north(11+k,2,6) = wwl_north(11+k,2,6) + tmp_6i
+                            wwl_north(11+k,1,7) = wwl_north(11+k,1,7) + tmp_7r
+                            wwl_north(11+k,2,7) = wwl_north(11+k,2,7) + tmp_7i
+                            wwl_north(11+k,1,8) = wwl_north(11+k,1,8) + tmp_8r
+                            wwl_north(11+k,2,8) = wwl_north(11+k,2,8) + tmp_8i
+
+                        end do
+
+                 !! Inverse rotation
+                  ! j=0, m2_b=1, ind_1dim_b=1
+                        wlnorth_q0_1r = wwl_north( 1,1,1)
+                        wlnorth_q0_1i = wwl_north( 1,2,1)
+                        wlnorth_q0_2r = wwl_north( 1,1,2)
+                        wlnorth_q0_2i = wwl_north( 1,2,2)
+                        wlnorth_q0_3r = wwl_north( 1,1,3)
+                        wlnorth_q0_3i = wwl_north( 1,2,3)
+                        wlnorth_q0_4r = wwl_north( 1,1,4)
+                        wlnorth_q0_4i = wwl_north( 1,2,4)
+                        wlnorth_q0_5r = wwl_north( 1,1,5)
+                        wlnorth_q0_5i = wwl_north( 1,2,5)
+                        wlnorth_q0_6r = wwl_north( 1,1,6)
+                        wlnorth_q0_6i = wwl_north( 1,2,6)
+                        wlnorth_q0_7r = wwl_north( 1,1,7)
+                        wlnorth_q0_7i = wwl_north( 1,2,7)
+                        wlnorth_q0_8r = wwl_north( 1,1,8)
+                        wlnorth_q0_8i = wwl_north( 1,2,8)
+
+                        do p=0,0               ! parallel loop.
+                           m1 = 1 + p                ! translating the indices (j,p) to 1-dim index
+                           shinvrot1_q0_r = sh_inv_rot1( 1+p,1,irz,iry,irx,ilevel)
+                           shinvrot1_q0_i = sh_inv_rot1( 1+p,2,irz,iry,irx,ilevel)
+                           shinvrot2_q0_r = sh_inv_rot2( 1+p,1,irz,iry,irx,ilevel)
+                           shinvrot2_q0_i = sh_inv_rot2( 1+p,2,irz,iry,irx,ilevel)
+
+                           tmp_ce_r = wlnorth_q0_1r * shinvrot1_q0_r + wlnorth_q0_1i * shinvrot2_q0_r
+                           tmp_ce_i = wlnorth_q0_1r * shinvrot1_q0_i + wlnorth_q0_1i * shinvrot2_q0_i
+                           wl_omp(m1,1,icz0_1,icy0_1,icx0_1,iam) = wl_omp(m1,1,icz0_1,icy0_1,icx0_1,iam) + tmp_ce_r
+                           wl_omp(m1,2,icz0_1,icy0_1,icx0_1,iam) = wl_omp(m1,2,icz0_1,icy0_1,icx0_1,iam) + tmp_ce_i
+
+                           tmp_ce_r = wlnorth_q0_2r * shinvrot1_q0_r + wlnorth_q0_2i * shinvrot2_q0_r
+                           tmp_ce_i = wlnorth_q0_2r * shinvrot1_q0_i + wlnorth_q0_2i * shinvrot2_q0_i
+                           wl_omp(m1,1,icz0_2,icy0_2,icx0_2,iam) = wl_omp(m1,1,icz0_2,icy0_2,icx0_2,iam) + tmp_ce_r
+                           wl_omp(m1,2,icz0_2,icy0_2,icx0_2,iam) = wl_omp(m1,2,icz0_2,icy0_2,icx0_2,iam) + tmp_ce_i
+
+                           tmp_ce_r = wlnorth_q0_3r * shinvrot1_q0_r + wlnorth_q0_3i * shinvrot2_q0_r
+                           tmp_ce_i = wlnorth_q0_3r * shinvrot1_q0_i + wlnorth_q0_3i * shinvrot2_q0_i
+                           wl_omp(m1,1,icz0_3,icy0_3,icx0_3,iam) = wl_omp(m1,1,icz0_3,icy0_3,icx0_3,iam) + tmp_ce_r
+                           wl_omp(m1,2,icz0_3,icy0_3,icx0_3,iam) = wl_omp(m1,2,icz0_3,icy0_3,icx0_3,iam) + tmp_ce_i
+
+                           tmp_ce_r = wlnorth_q0_4r * shinvrot1_q0_r + wlnorth_q0_4i * shinvrot2_q0_r
+                           tmp_ce_i = wlnorth_q0_4r * shinvrot1_q0_i + wlnorth_q0_4i * shinvrot2_q0_i
+                           wl_omp(m1,1,icz0_4,icy0_4,icx0_4,iam) = wl_omp(m1,1,icz0_4,icy0_4,icx0_4,iam) + tmp_ce_r
+                           wl_omp(m1,2,icz0_4,icy0_4,icx0_4,iam) = wl_omp(m1,2,icz0_4,icy0_4,icx0_4,iam) + tmp_ce_i
+
+                           tmp_ce_r = wlnorth_q0_5r * shinvrot1_q0_r + wlnorth_q0_5i * shinvrot2_q0_r
+                           tmp_ce_i = wlnorth_q0_5r * shinvrot1_q0_i + wlnorth_q0_5i * shinvrot2_q0_i
+                           wl_omp(m1,1,icz0_5,icy0_5,icx0_5,iam) = wl_omp(m1,1,icz0_5,icy0_5,icx0_5,iam) + tmp_ce_r
+                           wl_omp(m1,2,icz0_5,icy0_5,icx0_5,iam) = wl_omp(m1,2,icz0_5,icy0_5,icx0_5,iam) + tmp_ce_i
+
+                           tmp_ce_r = wlnorth_q0_6r * shinvrot1_q0_r + wlnorth_q0_6i * shinvrot2_q0_r
+                           tmp_ce_i = wlnorth_q0_6r * shinvrot1_q0_i + wlnorth_q0_6i * shinvrot2_q0_i
+                           wl_omp(m1,1,icz0_6,icy0_6,icx0_6,iam) = wl_omp(m1,1,icz0_6,icy0_6,icx0_6,iam) + tmp_ce_r
+                           wl_omp(m1,2,icz0_6,icy0_6,icx0_6,iam) = wl_omp(m1,2,icz0_6,icy0_6,icx0_6,iam) + tmp_ce_i
+
+                           tmp_ce_r = wlnorth_q0_7r * shinvrot1_q0_r + wlnorth_q0_7i * shinvrot2_q0_r
+                           tmp_ce_i = wlnorth_q0_7r * shinvrot1_q0_i + wlnorth_q0_7i * shinvrot2_q0_i
+                           wl_omp(m1,1,icz0_7,icy0_7,icx0_7,iam) = wl_omp(m1,1,icz0_7,icy0_7,icx0_7,iam) + tmp_ce_r
+                           wl_omp(m1,2,icz0_7,icy0_7,icx0_7,iam) = wl_omp(m1,2,icz0_7,icy0_7,icx0_7,iam) + tmp_ce_i
+
+                           tmp_ce_r = wlnorth_q0_8r * shinvrot1_q0_r + wlnorth_q0_8i * shinvrot2_q0_r
+                           tmp_ce_i = wlnorth_q0_8r * shinvrot1_q0_i + wlnorth_q0_8i * shinvrot2_q0_i
+                           wl_omp(m1,1,icz0_8,icy0_8,icx0_8,iam) = wl_omp(m1,1,icz0_8,icy0_8,icx0_8,iam) + tmp_ce_r
+                           wl_omp(m1,2,icz0_8,icy0_8,icx0_8,iam) = wl_omp(m1,2,icz0_8,icy0_8,icx0_8,iam) + tmp_ce_i
+                        enddo
+
+                  ! j=1, m2_b=2, ind_1dim_b=2
+                        wlnorth_q0_1r = wwl_north( 2,1,1)
+                        wlnorth_q0_1i = wwl_north( 2,2,1)
+                        wlnorth_q0_2r = wwl_north( 2,1,2)
+                        wlnorth_q0_2i = wwl_north( 2,2,2)
+                        wlnorth_q0_3r = wwl_north( 2,1,3)
+                        wlnorth_q0_3i = wwl_north( 2,2,3)
+                        wlnorth_q0_4r = wwl_north( 2,1,4)
+                        wlnorth_q0_4i = wwl_north( 2,2,4)
+                        wlnorth_q0_5r = wwl_north( 2,1,5)
+                        wlnorth_q0_5i = wwl_north( 2,2,5)
+                        wlnorth_q0_6r = wwl_north( 2,1,6)
+                        wlnorth_q0_6i = wwl_north( 2,2,6)
+                        wlnorth_q0_7r = wwl_north( 2,1,7)
+                        wlnorth_q0_7i = wwl_north( 2,2,7)
+                        wlnorth_q0_8r = wwl_north( 2,1,8)
+                        wlnorth_q0_8i = wwl_north( 2,2,8)
+                        wlnorth_q1_1r = wwl_north( 3,1,1)
+                        wlnorth_q1_1i = wwl_north( 3,2,1)
+                        wlnorth_q1_2r = wwl_north( 3,1,2)
+                        wlnorth_q1_2i = wwl_north( 3,2,2)
+                        wlnorth_q1_3r = wwl_north( 3,1,3)
+                        wlnorth_q1_3i = wwl_north( 3,2,3)
+                        wlnorth_q1_4r = wwl_north( 3,1,4)
+                        wlnorth_q1_4i = wwl_north( 3,2,4)
+                        wlnorth_q1_5r = wwl_north( 3,1,5)
+                        wlnorth_q1_5i = wwl_north( 3,2,5)
+                        wlnorth_q1_6r = wwl_north( 3,1,6)
+                        wlnorth_q1_6i = wwl_north( 3,2,6)
+                        wlnorth_q1_7r = wwl_north( 3,1,7)
+                        wlnorth_q1_7i = wwl_north( 3,2,7)
+                        wlnorth_q1_8r = wwl_north( 3,1,8)
+                        wlnorth_q1_8i = wwl_north( 3,2,8)
+
+!ocl simd_redundant_vl(5)
+                        do p=0,1               ! parallel loop.
+                           m1 = 2 + p                ! translating the indices (j,p) to 1-dim index
+                           shinvrot1_q0_r = sh_inv_rot1( 2+p,1,irz,iry,irx,ilevel)
+                           shinvrot1_q0_i = sh_inv_rot1( 2+p,2,irz,iry,irx,ilevel)
+                           shinvrot2_q0_r = sh_inv_rot2( 2+p,1,irz,iry,irx,ilevel)
+                           shinvrot2_q0_i = sh_inv_rot2( 2+p,2,irz,iry,irx,ilevel)
+                           shinvrot1_q1_r = sh_inv_rot1( 4+p,1,irz,iry,irx,ilevel)
+                           shinvrot1_q1_i = sh_inv_rot1( 4+p,2,irz,iry,irx,ilevel)
+                           shinvrot2_q1_r = sh_inv_rot2( 4+p,1,irz,iry,irx,ilevel)
+                           shinvrot2_q1_i = sh_inv_rot2( 4+p,2,irz,iry,irx,ilevel)
+
+                           tmp_ce_r = wlnorth_q0_1r * shinvrot1_q0_r + wlnorth_q0_1i * shinvrot2_q0_r &
+                                  & + wlnorth_q1_1r * shinvrot1_q1_r + wlnorth_q1_1i * shinvrot2_q1_r
+                           tmp_ce_i = wlnorth_q0_1r * shinvrot1_q0_i + wlnorth_q0_1i * shinvrot2_q0_i &
+                                  & + wlnorth_q1_1r * shinvrot1_q1_i + wlnorth_q1_1i * shinvrot2_q1_i
+                           wl_omp(m1,1,icz0_1,icy0_1,icx0_1,iam) = wl_omp(m1,1,icz0_1,icy0_1,icx0_1,iam) + tmp_ce_r
+                           wl_omp(m1,2,icz0_1,icy0_1,icx0_1,iam) = wl_omp(m1,2,icz0_1,icy0_1,icx0_1,iam) + tmp_ce_i
+
+                           tmp_ce_r = wlnorth_q0_2r * shinvrot1_q0_r + wlnorth_q0_2i * shinvrot2_q0_r &
+                                  & + wlnorth_q1_2r * shinvrot1_q1_r + wlnorth_q1_2i * shinvrot2_q1_r
+                           tmp_ce_i = wlnorth_q0_2r * shinvrot1_q0_i + wlnorth_q0_2i * shinvrot2_q0_i &
+                                  & + wlnorth_q1_2r * shinvrot1_q1_i + wlnorth_q1_2i * shinvrot2_q1_i
+                           wl_omp(m1,1,icz0_2,icy0_2,icx0_2,iam) = wl_omp(m1,1,icz0_2,icy0_2,icx0_2,iam) + tmp_ce_r
+                           wl_omp(m1,2,icz0_2,icy0_2,icx0_2,iam) = wl_omp(m1,2,icz0_2,icy0_2,icx0_2,iam) + tmp_ce_i
+
+                           tmp_ce_r = wlnorth_q0_3r * shinvrot1_q0_r + wlnorth_q0_3i * shinvrot2_q0_r &
+                                  & + wlnorth_q1_3r * shinvrot1_q1_r + wlnorth_q1_3i * shinvrot2_q1_r
+                           tmp_ce_i = wlnorth_q0_3r * shinvrot1_q0_i + wlnorth_q0_3i * shinvrot2_q0_i &
+                                  & + wlnorth_q1_3r * shinvrot1_q1_i + wlnorth_q1_3i * shinvrot2_q1_i
+                           wl_omp(m1,1,icz0_3,icy0_3,icx0_3,iam) = wl_omp(m1,1,icz0_3,icy0_3,icx0_3,iam) + tmp_ce_r
+                           wl_omp(m1,2,icz0_3,icy0_3,icx0_3,iam) = wl_omp(m1,2,icz0_3,icy0_3,icx0_3,iam) + tmp_ce_i
+
+                           tmp_ce_r = wlnorth_q0_4r * shinvrot1_q0_r + wlnorth_q0_4i * shinvrot2_q0_r &
+                                  & + wlnorth_q1_4r * shinvrot1_q1_r + wlnorth_q1_4i * shinvrot2_q1_r
+                           tmp_ce_i = wlnorth_q0_4r * shinvrot1_q0_i + wlnorth_q0_4i * shinvrot2_q0_i &
+                                  & + wlnorth_q1_4r * shinvrot1_q1_i + wlnorth_q1_4i * shinvrot2_q1_i
+                           wl_omp(m1,1,icz0_4,icy0_4,icx0_4,iam) = wl_omp(m1,1,icz0_4,icy0_4,icx0_4,iam) + tmp_ce_r
+                           wl_omp(m1,2,icz0_4,icy0_4,icx0_4,iam) = wl_omp(m1,2,icz0_4,icy0_4,icx0_4,iam) + tmp_ce_i
+
+                           tmp_ce_r = wlnorth_q0_5r * shinvrot1_q0_r + wlnorth_q0_5i * shinvrot2_q0_r &
+                                  & + wlnorth_q1_5r * shinvrot1_q1_r + wlnorth_q1_5i * shinvrot2_q1_r
+                           tmp_ce_i = wlnorth_q0_5r * shinvrot1_q0_i + wlnorth_q0_5i * shinvrot2_q0_i &
+                                  & + wlnorth_q1_5r * shinvrot1_q1_i + wlnorth_q1_5i * shinvrot2_q1_i
+                           wl_omp(m1,1,icz0_5,icy0_5,icx0_5,iam) = wl_omp(m1,1,icz0_5,icy0_5,icx0_5,iam) + tmp_ce_r
+                           wl_omp(m1,2,icz0_5,icy0_5,icx0_5,iam) = wl_omp(m1,2,icz0_5,icy0_5,icx0_5,iam) + tmp_ce_i
+
+                           tmp_ce_r = wlnorth_q0_6r * shinvrot1_q0_r + wlnorth_q0_6i * shinvrot2_q0_r &
+                                  & + wlnorth_q1_6r * shinvrot1_q1_r + wlnorth_q1_6i * shinvrot2_q1_r
+                           tmp_ce_i = wlnorth_q0_6r * shinvrot1_q0_i + wlnorth_q0_6i * shinvrot2_q0_i &
+                                  & + wlnorth_q1_6r * shinvrot1_q1_i + wlnorth_q1_6i * shinvrot2_q1_i
+                           wl_omp(m1,1,icz0_6,icy0_6,icx0_6,iam) = wl_omp(m1,1,icz0_6,icy0_6,icx0_6,iam) + tmp_ce_r
+                           wl_omp(m1,2,icz0_6,icy0_6,icx0_6,iam) = wl_omp(m1,2,icz0_6,icy0_6,icx0_6,iam) + tmp_ce_i
+
+                           tmp_ce_r = wlnorth_q0_7r * shinvrot1_q0_r + wlnorth_q0_7i * shinvrot2_q0_r &
+                                  & + wlnorth_q1_7r * shinvrot1_q1_r + wlnorth_q1_7i * shinvrot2_q1_r
+                           tmp_ce_i = wlnorth_q0_7r * shinvrot1_q0_i + wlnorth_q0_7i * shinvrot2_q0_i &
+                                  & + wlnorth_q1_7r * shinvrot1_q1_i + wlnorth_q1_7i * shinvrot2_q1_i
+                           wl_omp(m1,1,icz0_7,icy0_7,icx0_7,iam) = wl_omp(m1,1,icz0_7,icy0_7,icx0_7,iam) + tmp_ce_r
+                           wl_omp(m1,2,icz0_7,icy0_7,icx0_7,iam) = wl_omp(m1,2,icz0_7,icy0_7,icx0_7,iam) + tmp_ce_i
+
+                           tmp_ce_r = wlnorth_q0_8r * shinvrot1_q0_r + wlnorth_q0_8i * shinvrot2_q0_r &
+                                  & + wlnorth_q1_8r * shinvrot1_q1_r + wlnorth_q1_8i * shinvrot2_q1_r
+                           tmp_ce_i = wlnorth_q0_8r * shinvrot1_q0_i + wlnorth_q0_8i * shinvrot2_q0_i &
+                                  & + wlnorth_q1_8r * shinvrot1_q1_i + wlnorth_q1_8i * shinvrot2_q1_i
+                           wl_omp(m1,1,icz0_8,icy0_8,icx0_8,iam) = wl_omp(m1,1,icz0_8,icy0_8,icx0_8,iam) + tmp_ce_r
+                           wl_omp(m1,2,icz0_8,icy0_8,icx0_8,iam) = wl_omp(m1,2,icz0_8,icy0_8,icx0_8,iam) + tmp_ce_i
+                        enddo
+
+                  ! j=2, m2_b=4, ind_1dim_b=6
+                        wlnorth_q0_1r = wwl_north( 4,1,1)
+                        wlnorth_q0_1i = wwl_north( 4,2,1)
+                        wlnorth_q0_2r = wwl_north( 4,1,2)
+                        wlnorth_q0_2i = wwl_north( 4,2,2)
+                        wlnorth_q0_3r = wwl_north( 4,1,3)
+                        wlnorth_q0_3i = wwl_north( 4,2,3)
+                        wlnorth_q0_4r = wwl_north( 4,1,4)
+                        wlnorth_q0_4i = wwl_north( 4,2,4)
+                        wlnorth_q0_5r = wwl_north( 4,1,5)
+                        wlnorth_q0_5i = wwl_north( 4,2,5)
+                        wlnorth_q0_6r = wwl_north( 4,1,6)
+                        wlnorth_q0_6i = wwl_north( 4,2,6)
+                        wlnorth_q0_7r = wwl_north( 4,1,7)
+                        wlnorth_q0_7i = wwl_north( 4,2,7)
+                        wlnorth_q0_8r = wwl_north( 4,1,8)
+                        wlnorth_q0_8i = wwl_north( 4,2,8)
+                        wlnorth_q1_1r = wwl_north( 5,1,1)
+                        wlnorth_q1_1i = wwl_north( 5,2,1)
+                        wlnorth_q1_2r = wwl_north( 5,1,2)
+                        wlnorth_q1_2i = wwl_north( 5,2,2)
+                        wlnorth_q1_3r = wwl_north( 5,1,3)
+                        wlnorth_q1_3i = wwl_north( 5,2,3)
+                        wlnorth_q1_4r = wwl_north( 5,1,4)
+                        wlnorth_q1_4i = wwl_north( 5,2,4)
+                        wlnorth_q1_5r = wwl_north( 5,1,5)
+                        wlnorth_q1_5i = wwl_north( 5,2,5)
+                        wlnorth_q1_6r = wwl_north( 5,1,6)
+                        wlnorth_q1_6i = wwl_north( 5,2,6)
+                        wlnorth_q1_7r = wwl_north( 5,1,7)
+                        wlnorth_q1_7i = wwl_north( 5,2,7)
+                        wlnorth_q1_8r = wwl_north( 5,1,8)
+                        wlnorth_q1_8i = wwl_north( 5,2,8)
+                        wlnorth_q2_1r = wwl_north( 6,1,1)
+                        wlnorth_q2_1i = wwl_north( 6,2,1)
+                        wlnorth_q2_2r = wwl_north( 6,1,2)
+                        wlnorth_q2_2i = wwl_north( 6,2,2)
+                        wlnorth_q2_3r = wwl_north( 6,1,3)
+                        wlnorth_q2_3i = wwl_north( 6,2,3)
+                        wlnorth_q2_4r = wwl_north( 6,1,4)
+                        wlnorth_q2_4i = wwl_north( 6,2,4)
+                        wlnorth_q2_5r = wwl_north( 6,1,5)
+                        wlnorth_q2_5i = wwl_north( 6,2,5)
+                        wlnorth_q2_6r = wwl_north( 6,1,6)
+                        wlnorth_q2_6i = wwl_north( 6,2,6)
+                        wlnorth_q2_7r = wwl_north( 6,1,7)
+                        wlnorth_q2_7i = wwl_north( 6,2,7)
+                        wlnorth_q2_8r = wwl_north( 6,1,8)
+                        wlnorth_q2_8i = wwl_north( 6,2,8)
+
+!ocl simd_redundant_vl(5)
+                        do p=0,2               ! parallel loop.
+                           m1 = 4 + p                ! translating the indices (j,p) to 1-dim index
+                           shinvrot1_q0_r = sh_inv_rot1( 6+p,1,irz,iry,irx,ilevel)
+                           shinvrot1_q0_i = sh_inv_rot1( 6+p,2,irz,iry,irx,ilevel)
+                           shinvrot2_q0_r = sh_inv_rot2( 6+p,1,irz,iry,irx,ilevel)
+                           shinvrot2_q0_i = sh_inv_rot2( 6+p,2,irz,iry,irx,ilevel)
+                           shinvrot1_q1_r = sh_inv_rot1( 9+p,1,irz,iry,irx,ilevel)
+                           shinvrot1_q1_i = sh_inv_rot1( 9+p,2,irz,iry,irx,ilevel)
+                           shinvrot2_q1_r = sh_inv_rot2( 9+p,1,irz,iry,irx,ilevel)
+                           shinvrot2_q1_i = sh_inv_rot2( 9+p,2,irz,iry,irx,ilevel)
+                           shinvrot1_q2_r = sh_inv_rot1(12+p,1,irz,iry,irx,ilevel)
+                           shinvrot1_q2_i = sh_inv_rot1(12+p,2,irz,iry,irx,ilevel)
+                           shinvrot2_q2_r = sh_inv_rot2(12+p,1,irz,iry,irx,ilevel)
+                           shinvrot2_q2_i = sh_inv_rot2(12+p,2,irz,iry,irx,ilevel)
+
+                           tmp_ce_r = wlnorth_q0_1r * shinvrot1_q0_r + wlnorth_q0_1i * shinvrot2_q0_r &
+                                  & + wlnorth_q1_1r * shinvrot1_q1_r + wlnorth_q1_1i * shinvrot2_q1_r &
+                                  & + wlnorth_q2_1r * shinvrot1_q2_r + wlnorth_q2_1i * shinvrot2_q2_r
+                           tmp_ce_i = wlnorth_q0_1r * shinvrot1_q0_i + wlnorth_q0_1i * shinvrot2_q0_i &
+                                  & + wlnorth_q1_1r * shinvrot1_q1_i + wlnorth_q1_1i * shinvrot2_q1_i &
+                                  & + wlnorth_q2_1r * shinvrot1_q2_i + wlnorth_q2_1i * shinvrot2_q2_i
+                           wl_omp(m1,1,icz0_1,icy0_1,icx0_1,iam) = wl_omp(m1,1,icz0_1,icy0_1,icx0_1,iam) + tmp_ce_r
+                           wl_omp(m1,2,icz0_1,icy0_1,icx0_1,iam) = wl_omp(m1,2,icz0_1,icy0_1,icx0_1,iam) + tmp_ce_i
+
+                           tmp_ce_r = wlnorth_q0_2r * shinvrot1_q0_r + wlnorth_q0_2i * shinvrot2_q0_r &
+                                  & + wlnorth_q1_2r * shinvrot1_q1_r + wlnorth_q1_2i * shinvrot2_q1_r &
+                                  & + wlnorth_q2_2r * shinvrot1_q2_r + wlnorth_q2_2i * shinvrot2_q2_r
+                           tmp_ce_i = wlnorth_q0_2r * shinvrot1_q0_i + wlnorth_q0_2i * shinvrot2_q0_i &
+                                  & + wlnorth_q1_2r * shinvrot1_q1_i + wlnorth_q1_2i * shinvrot2_q1_i &
+                                  & + wlnorth_q2_2r * shinvrot1_q2_i + wlnorth_q2_2i * shinvrot2_q2_i
+                           wl_omp(m1,1,icz0_2,icy0_2,icx0_2,iam) = wl_omp(m1,1,icz0_2,icy0_2,icx0_2,iam) + tmp_ce_r
+                           wl_omp(m1,2,icz0_2,icy0_2,icx0_2,iam) = wl_omp(m1,2,icz0_2,icy0_2,icx0_2,iam) + tmp_ce_i
+
+                           tmp_ce_r = wlnorth_q0_3r * shinvrot1_q0_r + wlnorth_q0_3i * shinvrot2_q0_r &
+                                  & + wlnorth_q1_3r * shinvrot1_q1_r + wlnorth_q1_3i * shinvrot2_q1_r &
+                                  & + wlnorth_q2_3r * shinvrot1_q2_r + wlnorth_q2_3i * shinvrot2_q2_r
+                           tmp_ce_i = wlnorth_q0_3r * shinvrot1_q0_i + wlnorth_q0_3i * shinvrot2_q0_i &
+                                  & + wlnorth_q1_3r * shinvrot1_q1_i + wlnorth_q1_3i * shinvrot2_q1_i &
+                                  & + wlnorth_q2_3r * shinvrot1_q2_i + wlnorth_q2_3i * shinvrot2_q2_i
+                           wl_omp(m1,1,icz0_3,icy0_3,icx0_3,iam) = wl_omp(m1,1,icz0_3,icy0_3,icx0_3,iam) + tmp_ce_r
+                           wl_omp(m1,2,icz0_3,icy0_3,icx0_3,iam) = wl_omp(m1,2,icz0_3,icy0_3,icx0_3,iam) + tmp_ce_i
+
+                           tmp_ce_r = wlnorth_q0_4r * shinvrot1_q0_r + wlnorth_q0_4i * shinvrot2_q0_r &
+                                  & + wlnorth_q1_4r * shinvrot1_q1_r + wlnorth_q1_4i * shinvrot2_q1_r &
+                                  & + wlnorth_q2_4r * shinvrot1_q2_r + wlnorth_q2_4i * shinvrot2_q2_r
+                           tmp_ce_i = wlnorth_q0_4r * shinvrot1_q0_i + wlnorth_q0_4i * shinvrot2_q0_i &
+                                  & + wlnorth_q1_4r * shinvrot1_q1_i + wlnorth_q1_4i * shinvrot2_q1_i &
+                                  & + wlnorth_q2_4r * shinvrot1_q2_i + wlnorth_q2_4i * shinvrot2_q2_i
+                           wl_omp(m1,1,icz0_4,icy0_4,icx0_4,iam) = wl_omp(m1,1,icz0_4,icy0_4,icx0_4,iam) + tmp_ce_r
+                           wl_omp(m1,2,icz0_4,icy0_4,icx0_4,iam) = wl_omp(m1,2,icz0_4,icy0_4,icx0_4,iam) + tmp_ce_i
+
+                           tmp_ce_r = wlnorth_q0_5r * shinvrot1_q0_r + wlnorth_q0_5i * shinvrot2_q0_r &
+                                  & + wlnorth_q1_5r * shinvrot1_q1_r + wlnorth_q1_5i * shinvrot2_q1_r &
+                                  & + wlnorth_q2_5r * shinvrot1_q2_r + wlnorth_q2_5i * shinvrot2_q2_r
+                           tmp_ce_i = wlnorth_q0_5r * shinvrot1_q0_i + wlnorth_q0_5i * shinvrot2_q0_i &
+                                  & + wlnorth_q1_5r * shinvrot1_q1_i + wlnorth_q1_5i * shinvrot2_q1_i &
+                                  & + wlnorth_q2_5r * shinvrot1_q2_i + wlnorth_q2_5i * shinvrot2_q2_i
+                           wl_omp(m1,1,icz0_5,icy0_5,icx0_5,iam) = wl_omp(m1,1,icz0_5,icy0_5,icx0_5,iam) + tmp_ce_r
+                           wl_omp(m1,2,icz0_5,icy0_5,icx0_5,iam) = wl_omp(m1,2,icz0_5,icy0_5,icx0_5,iam) + tmp_ce_i
+
+                           tmp_ce_r = wlnorth_q0_6r * shinvrot1_q0_r + wlnorth_q0_6i * shinvrot2_q0_r &
+                                  & + wlnorth_q1_6r * shinvrot1_q1_r + wlnorth_q1_6i * shinvrot2_q1_r &
+                                  & + wlnorth_q2_6r * shinvrot1_q2_r + wlnorth_q2_6i * shinvrot2_q2_r
+                           tmp_ce_i = wlnorth_q0_6r * shinvrot1_q0_i + wlnorth_q0_6i * shinvrot2_q0_i &
+                                  & + wlnorth_q1_6r * shinvrot1_q1_i + wlnorth_q1_6i * shinvrot2_q1_i &
+                                  & + wlnorth_q2_6r * shinvrot1_q2_i + wlnorth_q2_6i * shinvrot2_q2_i
+                           wl_omp(m1,1,icz0_6,icy0_6,icx0_6,iam) = wl_omp(m1,1,icz0_6,icy0_6,icx0_6,iam) + tmp_ce_r
+                           wl_omp(m1,2,icz0_6,icy0_6,icx0_6,iam) = wl_omp(m1,2,icz0_6,icy0_6,icx0_6,iam) + tmp_ce_i
+
+                           tmp_ce_r = wlnorth_q0_7r * shinvrot1_q0_r + wlnorth_q0_7i * shinvrot2_q0_r &
+                                  & + wlnorth_q1_7r * shinvrot1_q1_r + wlnorth_q1_7i * shinvrot2_q1_r &
+                                  & + wlnorth_q2_7r * shinvrot1_q2_r + wlnorth_q2_7i * shinvrot2_q2_r
+                           tmp_ce_i = wlnorth_q0_7r * shinvrot1_q0_i + wlnorth_q0_7i * shinvrot2_q0_i &
+                                  & + wlnorth_q1_7r * shinvrot1_q1_i + wlnorth_q1_7i * shinvrot2_q1_i &
+                                  & + wlnorth_q2_7r * shinvrot1_q2_i + wlnorth_q2_7i * shinvrot2_q2_i
+                           wl_omp(m1,1,icz0_7,icy0_7,icx0_7,iam) = wl_omp(m1,1,icz0_7,icy0_7,icx0_7,iam) + tmp_ce_r
+                           wl_omp(m1,2,icz0_7,icy0_7,icx0_7,iam) = wl_omp(m1,2,icz0_7,icy0_7,icx0_7,iam) + tmp_ce_i
+
+                           tmp_ce_r = wlnorth_q0_8r * shinvrot1_q0_r + wlnorth_q0_8i * shinvrot2_q0_r &
+                                  & + wlnorth_q1_8r * shinvrot1_q1_r + wlnorth_q1_8i * shinvrot2_q1_r &
+                                  & + wlnorth_q2_8r * shinvrot1_q2_r + wlnorth_q2_8i * shinvrot2_q2_r
+                           tmp_ce_i = wlnorth_q0_8r * shinvrot1_q0_i + wlnorth_q0_8i * shinvrot2_q0_i &
+                                  & + wlnorth_q1_8r * shinvrot1_q1_i + wlnorth_q1_8i * shinvrot2_q1_i &
+                                  & + wlnorth_q2_8r * shinvrot1_q2_i + wlnorth_q2_8i * shinvrot2_q2_i
+                           wl_omp(m1,1,icz0_8,icy0_8,icx0_8,iam) = wl_omp(m1,1,icz0_8,icy0_8,icx0_8,iam) + tmp_ce_r
+                           wl_omp(m1,2,icz0_8,icy0_8,icx0_8,iam) = wl_omp(m1,2,icz0_8,icy0_8,icx0_8,iam) + tmp_ce_i
+                        enddo
+
+                  ! j=3, m2_b=7, ind_1dim_b=15
+                        wlnorth_q0_1r = wwl_north( 7,1,1)
+                        wlnorth_q0_1i = wwl_north( 7,2,1)
+                        wlnorth_q0_2r = wwl_north( 7,1,2)
+                        wlnorth_q0_2i = wwl_north( 7,2,2)
+                        wlnorth_q0_3r = wwl_north( 7,1,3)
+                        wlnorth_q0_3i = wwl_north( 7,2,3)
+                        wlnorth_q0_4r = wwl_north( 7,1,4)
+                        wlnorth_q0_4i = wwl_north( 7,2,4)
+                        wlnorth_q0_5r = wwl_north( 7,1,5)
+                        wlnorth_q0_5i = wwl_north( 7,2,5)
+                        wlnorth_q0_6r = wwl_north( 7,1,6)
+                        wlnorth_q0_6i = wwl_north( 7,2,6)
+                        wlnorth_q0_7r = wwl_north( 7,1,7)
+                        wlnorth_q0_7i = wwl_north( 7,2,7)
+                        wlnorth_q0_8r = wwl_north( 7,1,8)
+                        wlnorth_q0_8i = wwl_north( 7,2,8)
+                        wlnorth_q1_1r = wwl_north( 8,1,1)
+                        wlnorth_q1_1i = wwl_north( 8,2,1)
+                        wlnorth_q1_2r = wwl_north( 8,1,2)
+                        wlnorth_q1_2i = wwl_north( 8,2,2)
+                        wlnorth_q1_3r = wwl_north( 8,1,3)
+                        wlnorth_q1_3i = wwl_north( 8,2,3)
+                        wlnorth_q1_4r = wwl_north( 8,1,4)
+                        wlnorth_q1_4i = wwl_north( 8,2,4)
+                        wlnorth_q1_5r = wwl_north( 8,1,5)
+                        wlnorth_q1_5i = wwl_north( 8,2,5)
+                        wlnorth_q1_6r = wwl_north( 8,1,6)
+                        wlnorth_q1_6i = wwl_north( 8,2,6)
+                        wlnorth_q1_7r = wwl_north( 8,1,7)
+                        wlnorth_q1_7i = wwl_north( 8,2,7)
+                        wlnorth_q1_8r = wwl_north( 8,1,8)
+                        wlnorth_q1_8i = wwl_north( 8,2,8)
+                        wlnorth_q2_1r = wwl_north( 9,1,1)
+                        wlnorth_q2_1i = wwl_north( 9,2,1)
+                        wlnorth_q2_2r = wwl_north( 9,1,2)
+                        wlnorth_q2_2i = wwl_north( 9,2,2)
+                        wlnorth_q2_3r = wwl_north( 9,1,3)
+                        wlnorth_q2_3i = wwl_north( 9,2,3)
+                        wlnorth_q2_4r = wwl_north( 9,1,4)
+                        wlnorth_q2_4i = wwl_north( 9,2,4)
+                        wlnorth_q2_5r = wwl_north( 9,1,5)
+                        wlnorth_q2_5i = wwl_north( 9,2,5)
+                        wlnorth_q2_6r = wwl_north( 9,1,6)
+                        wlnorth_q2_6i = wwl_north( 9,2,6)
+                        wlnorth_q2_7r = wwl_north( 9,1,7)
+                        wlnorth_q2_7i = wwl_north( 9,2,7)
+                        wlnorth_q2_8r = wwl_north( 9,1,8)
+                        wlnorth_q2_8i = wwl_north( 9,2,8)
+                        wlnorth_q3_1r = wwl_north(10,1,1)
+                        wlnorth_q3_1i = wwl_north(10,2,1)
+                        wlnorth_q3_2r = wwl_north(10,1,2)
+                        wlnorth_q3_2i = wwl_north(10,2,2)
+                        wlnorth_q3_3r = wwl_north(10,1,3)
+                        wlnorth_q3_3i = wwl_north(10,2,3)
+                        wlnorth_q3_4r = wwl_north(10,1,4)
+                        wlnorth_q3_4i = wwl_north(10,2,4)
+                        wlnorth_q3_5r = wwl_north(10,1,5)
+                        wlnorth_q3_5i = wwl_north(10,2,5)
+                        wlnorth_q3_6r = wwl_north(10,1,6)
+                        wlnorth_q3_6i = wwl_north(10,2,6)
+                        wlnorth_q3_7r = wwl_north(10,1,7)
+                        wlnorth_q3_7i = wwl_north(10,2,7)
+                        wlnorth_q3_8r = wwl_north(10,1,8)
+                        wlnorth_q3_8i = wwl_north(10,2,8)
+
+!ocl simd_redundant_vl(5)
+                        do p=0,3               ! parallel loop.
+                           m1 = 7 + p                ! translating the indices (j,p) to 1-dim index
+                           shinvrot1_q0_r = sh_inv_rot1(15+p,1,irz,iry,irx,ilevel)
+                           shinvrot1_q0_i = sh_inv_rot1(15+p,2,irz,iry,irx,ilevel)
+                           shinvrot2_q0_r = sh_inv_rot2(15+p,1,irz,iry,irx,ilevel)
+                           shinvrot2_q0_i = sh_inv_rot2(15+p,2,irz,iry,irx,ilevel)
+                           shinvrot1_q1_r = sh_inv_rot1(19+p,1,irz,iry,irx,ilevel)
+                           shinvrot1_q1_i = sh_inv_rot1(19+p,2,irz,iry,irx,ilevel)
+                           shinvrot2_q1_r = sh_inv_rot2(19+p,1,irz,iry,irx,ilevel)
+                           shinvrot2_q1_i = sh_inv_rot2(19+p,2,irz,iry,irx,ilevel)
+                           shinvrot1_q2_r = sh_inv_rot1(23+p,1,irz,iry,irx,ilevel)
+                           shinvrot1_q2_i = sh_inv_rot1(23+p,2,irz,iry,irx,ilevel)
+                           shinvrot2_q2_r = sh_inv_rot2(23+p,1,irz,iry,irx,ilevel)
+                           shinvrot2_q2_i = sh_inv_rot2(23+p,2,irz,iry,irx,ilevel)
+                           shinvrot1_q3_r = sh_inv_rot1(27+p,1,irz,iry,irx,ilevel)
+                           shinvrot1_q3_i = sh_inv_rot1(27+p,2,irz,iry,irx,ilevel)
+                           shinvrot2_q3_r = sh_inv_rot2(27+p,1,irz,iry,irx,ilevel)
+                           shinvrot2_q3_i = sh_inv_rot2(27+p,2,irz,iry,irx,ilevel)
+
+                           tmp_ce_r = wlnorth_q0_1r * shinvrot1_q0_r + wlnorth_q0_1i * shinvrot2_q0_r &
+                                  & + wlnorth_q1_1r * shinvrot1_q1_r + wlnorth_q1_1i * shinvrot2_q1_r &
+                                  & + wlnorth_q2_1r * shinvrot1_q2_r + wlnorth_q2_1i * shinvrot2_q2_r &
+                                  & + wlnorth_q3_1r * shinvrot1_q3_r + wlnorth_q3_1i * shinvrot2_q3_r
+                           tmp_ce_i = wlnorth_q0_1r * shinvrot1_q0_i + wlnorth_q0_1i * shinvrot2_q0_i &
+                                  & + wlnorth_q1_1r * shinvrot1_q1_i + wlnorth_q1_1i * shinvrot2_q1_i &
+                                  & + wlnorth_q2_1r * shinvrot1_q2_i + wlnorth_q2_1i * shinvrot2_q2_i &
+                                  & + wlnorth_q3_1r * shinvrot1_q3_i + wlnorth_q3_1i * shinvrot2_q3_i
+                           wl_omp(m1,1,icz0_1,icy0_1,icx0_1,iam) = wl_omp(m1,1,icz0_1,icy0_1,icx0_1,iam) + tmp_ce_r
+                           wl_omp(m1,2,icz0_1,icy0_1,icx0_1,iam) = wl_omp(m1,2,icz0_1,icy0_1,icx0_1,iam) + tmp_ce_i
+
+                           tmp_ce_r = wlnorth_q0_2r * shinvrot1_q0_r + wlnorth_q0_2i * shinvrot2_q0_r &
+                                  & + wlnorth_q1_2r * shinvrot1_q1_r + wlnorth_q1_2i * shinvrot2_q1_r &
+                                  & + wlnorth_q2_2r * shinvrot1_q2_r + wlnorth_q2_2i * shinvrot2_q2_r &
+                                  & + wlnorth_q3_2r * shinvrot1_q3_r + wlnorth_q3_2i * shinvrot2_q3_r
+                           tmp_ce_i = wlnorth_q0_2r * shinvrot1_q0_i + wlnorth_q0_2i * shinvrot2_q0_i &
+                                  & + wlnorth_q1_2r * shinvrot1_q1_i + wlnorth_q1_2i * shinvrot2_q1_i &
+                                  & + wlnorth_q2_2r * shinvrot1_q2_i + wlnorth_q2_2i * shinvrot2_q2_i &
+                                  & + wlnorth_q3_2r * shinvrot1_q3_i + wlnorth_q3_2i * shinvrot2_q3_i
+                           wl_omp(m1,1,icz0_2,icy0_2,icx0_2,iam) = wl_omp(m1,1,icz0_2,icy0_2,icx0_2,iam) + tmp_ce_r
+                           wl_omp(m1,2,icz0_2,icy0_2,icx0_2,iam) = wl_omp(m1,2,icz0_2,icy0_2,icx0_2,iam) + tmp_ce_i
+
+                           tmp_ce_r = wlnorth_q0_3r * shinvrot1_q0_r + wlnorth_q0_3i * shinvrot2_q0_r &
+                                  & + wlnorth_q1_3r * shinvrot1_q1_r + wlnorth_q1_3i * shinvrot2_q1_r &
+                                  & + wlnorth_q2_3r * shinvrot1_q2_r + wlnorth_q2_3i * shinvrot2_q2_r &
+                                  & + wlnorth_q3_3r * shinvrot1_q3_r + wlnorth_q3_3i * shinvrot2_q3_r
+                           tmp_ce_i = wlnorth_q0_3r * shinvrot1_q0_i + wlnorth_q0_3i * shinvrot2_q0_i &
+                                  & + wlnorth_q1_3r * shinvrot1_q1_i + wlnorth_q1_3i * shinvrot2_q1_i &
+                                  & + wlnorth_q2_3r * shinvrot1_q2_i + wlnorth_q2_3i * shinvrot2_q2_i &
+                                  & + wlnorth_q3_3r * shinvrot1_q3_i + wlnorth_q3_3i * shinvrot2_q3_i
+                           wl_omp(m1,1,icz0_3,icy0_3,icx0_3,iam) = wl_omp(m1,1,icz0_3,icy0_3,icx0_3,iam) + tmp_ce_r
+                           wl_omp(m1,2,icz0_3,icy0_3,icx0_3,iam) = wl_omp(m1,2,icz0_3,icy0_3,icx0_3,iam) + tmp_ce_i
+
+                           tmp_ce_r = wlnorth_q0_4r * shinvrot1_q0_r + wlnorth_q0_4i * shinvrot2_q0_r &
+                                  & + wlnorth_q1_4r * shinvrot1_q1_r + wlnorth_q1_4i * shinvrot2_q1_r &
+                                  & + wlnorth_q2_4r * shinvrot1_q2_r + wlnorth_q2_4i * shinvrot2_q2_r &
+                                  & + wlnorth_q3_4r * shinvrot1_q3_r + wlnorth_q3_4i * shinvrot2_q3_r
+                           tmp_ce_i = wlnorth_q0_4r * shinvrot1_q0_i + wlnorth_q0_4i * shinvrot2_q0_i &
+                                  & + wlnorth_q1_4r * shinvrot1_q1_i + wlnorth_q1_4i * shinvrot2_q1_i &
+                                  & + wlnorth_q2_4r * shinvrot1_q2_i + wlnorth_q2_4i * shinvrot2_q2_i &
+                                  & + wlnorth_q3_4r * shinvrot1_q3_i + wlnorth_q3_4i * shinvrot2_q3_i
+                           wl_omp(m1,1,icz0_4,icy0_4,icx0_4,iam) = wl_omp(m1,1,icz0_4,icy0_4,icx0_4,iam) + tmp_ce_r
+                           wl_omp(m1,2,icz0_4,icy0_4,icx0_4,iam) = wl_omp(m1,2,icz0_4,icy0_4,icx0_4,iam) + tmp_ce_i
+
+                           tmp_ce_r = wlnorth_q0_5r * shinvrot1_q0_r + wlnorth_q0_5i * shinvrot2_q0_r &
+                                  & + wlnorth_q1_5r * shinvrot1_q1_r + wlnorth_q1_5i * shinvrot2_q1_r &
+                                  & + wlnorth_q2_5r * shinvrot1_q2_r + wlnorth_q2_5i * shinvrot2_q2_r &
+                                  & + wlnorth_q3_5r * shinvrot1_q3_r + wlnorth_q3_5i * shinvrot2_q3_r
+                           tmp_ce_i = wlnorth_q0_5r * shinvrot1_q0_i + wlnorth_q0_5i * shinvrot2_q0_i &
+                                  & + wlnorth_q1_5r * shinvrot1_q1_i + wlnorth_q1_5i * shinvrot2_q1_i &
+                                  & + wlnorth_q2_5r * shinvrot1_q2_i + wlnorth_q2_5i * shinvrot2_q2_i &
+                                  & + wlnorth_q3_5r * shinvrot1_q3_i + wlnorth_q3_5i * shinvrot2_q3_i
+                           wl_omp(m1,1,icz0_5,icy0_5,icx0_5,iam) = wl_omp(m1,1,icz0_5,icy0_5,icx0_5,iam) + tmp_ce_r
+                           wl_omp(m1,2,icz0_5,icy0_5,icx0_5,iam) = wl_omp(m1,2,icz0_5,icy0_5,icx0_5,iam) + tmp_ce_i
+
+                           tmp_ce_r = wlnorth_q0_6r * shinvrot1_q0_r + wlnorth_q0_6i * shinvrot2_q0_r &
+                                  & + wlnorth_q1_6r * shinvrot1_q1_r + wlnorth_q1_6i * shinvrot2_q1_r &
+                                  & + wlnorth_q2_6r * shinvrot1_q2_r + wlnorth_q2_6i * shinvrot2_q2_r &
+                                  & + wlnorth_q3_6r * shinvrot1_q3_r + wlnorth_q3_6i * shinvrot2_q3_r
+                           tmp_ce_i = wlnorth_q0_6r * shinvrot1_q0_i + wlnorth_q0_6i * shinvrot2_q0_i &
+                                  & + wlnorth_q1_6r * shinvrot1_q1_i + wlnorth_q1_6i * shinvrot2_q1_i &
+                                  & + wlnorth_q2_6r * shinvrot1_q2_i + wlnorth_q2_6i * shinvrot2_q2_i &
+                                  & + wlnorth_q3_6r * shinvrot1_q3_i + wlnorth_q3_6i * shinvrot2_q3_i
+                           wl_omp(m1,1,icz0_6,icy0_6,icx0_6,iam) = wl_omp(m1,1,icz0_6,icy0_6,icx0_6,iam) + tmp_ce_r
+                           wl_omp(m1,2,icz0_6,icy0_6,icx0_6,iam) = wl_omp(m1,2,icz0_6,icy0_6,icx0_6,iam) + tmp_ce_i
+
+                           tmp_ce_r = wlnorth_q0_7r * shinvrot1_q0_r + wlnorth_q0_7i * shinvrot2_q0_r &
+                                  & + wlnorth_q1_7r * shinvrot1_q1_r + wlnorth_q1_7i * shinvrot2_q1_r &
+                                  & + wlnorth_q2_7r * shinvrot1_q2_r + wlnorth_q2_7i * shinvrot2_q2_r &
+                                  & + wlnorth_q3_7r * shinvrot1_q3_r + wlnorth_q3_7i * shinvrot2_q3_r
+                           tmp_ce_i = wlnorth_q0_7r * shinvrot1_q0_i + wlnorth_q0_7i * shinvrot2_q0_i &
+                                  & + wlnorth_q1_7r * shinvrot1_q1_i + wlnorth_q1_7i * shinvrot2_q1_i &
+                                  & + wlnorth_q2_7r * shinvrot1_q2_i + wlnorth_q2_7i * shinvrot2_q2_i &
+                                  & + wlnorth_q3_7r * shinvrot1_q3_i + wlnorth_q3_7i * shinvrot2_q3_i
+                           wl_omp(m1,1,icz0_7,icy0_7,icx0_7,iam) = wl_omp(m1,1,icz0_7,icy0_7,icx0_7,iam) + tmp_ce_r
+                           wl_omp(m1,2,icz0_7,icy0_7,icx0_7,iam) = wl_omp(m1,2,icz0_7,icy0_7,icx0_7,iam) + tmp_ce_i
+
+                           tmp_ce_r = wlnorth_q0_8r * shinvrot1_q0_r + wlnorth_q0_8i * shinvrot2_q0_r &
+                                  & + wlnorth_q1_8r * shinvrot1_q1_r + wlnorth_q1_8i * shinvrot2_q1_r &
+                                  & + wlnorth_q2_8r * shinvrot1_q2_r + wlnorth_q2_8i * shinvrot2_q2_r &
+                                  & + wlnorth_q3_8r * shinvrot1_q3_r + wlnorth_q3_8i * shinvrot2_q3_r
+                           tmp_ce_i = wlnorth_q0_8r * shinvrot1_q0_i + wlnorth_q0_8i * shinvrot2_q0_i &
+                                  & + wlnorth_q1_8r * shinvrot1_q1_i + wlnorth_q1_8i * shinvrot2_q1_i &
+                                  & + wlnorth_q2_8r * shinvrot1_q2_i + wlnorth_q2_8i * shinvrot2_q2_i &
+                                  & + wlnorth_q3_8r * shinvrot1_q3_i + wlnorth_q3_8i * shinvrot2_q3_i
+                           wl_omp(m1,1,icz0_8,icy0_8,icx0_8,iam) = wl_omp(m1,1,icz0_8,icy0_8,icx0_8,iam) + tmp_ce_r
+                           wl_omp(m1,2,icz0_8,icy0_8,icx0_8,iam) = wl_omp(m1,2,icz0_8,icy0_8,icx0_8,iam) + tmp_ce_i
+                        enddo
+
+                  ! j=4, m2_b=11, ind_1dim_b=31
+                        wlnorth_q0_1r = wwl_north(11,1,1)
+                        wlnorth_q0_1i = wwl_north(11,2,1)
+                        wlnorth_q0_2r = wwl_north(11,1,2)
+                        wlnorth_q0_2i = wwl_north(11,2,2)
+                        wlnorth_q0_3r = wwl_north(11,1,3)
+                        wlnorth_q0_3i = wwl_north(11,2,3)
+                        wlnorth_q0_4r = wwl_north(11,1,4)
+                        wlnorth_q0_4i = wwl_north(11,2,4)
+                        wlnorth_q0_5r = wwl_north(11,1,5)
+                        wlnorth_q0_5i = wwl_north(11,2,5)
+                        wlnorth_q0_6r = wwl_north(11,1,6)
+                        wlnorth_q0_6i = wwl_north(11,2,6)
+                        wlnorth_q0_7r = wwl_north(11,1,7)
+                        wlnorth_q0_7i = wwl_north(11,2,7)
+                        wlnorth_q0_8r = wwl_north(11,1,8)
+                        wlnorth_q0_8i = wwl_north(11,2,8)
+                        wlnorth_q1_1r = wwl_north(12,1,1)
+                        wlnorth_q1_1i = wwl_north(12,2,1)
+                        wlnorth_q1_2r = wwl_north(12,1,2)
+                        wlnorth_q1_2i = wwl_north(12,2,2)
+                        wlnorth_q1_3r = wwl_north(12,1,3)
+                        wlnorth_q1_3i = wwl_north(12,2,3)
+                        wlnorth_q1_4r = wwl_north(12,1,4)
+                        wlnorth_q1_4i = wwl_north(12,2,4)
+                        wlnorth_q1_5r = wwl_north(12,1,5)
+                        wlnorth_q1_5i = wwl_north(12,2,5)
+                        wlnorth_q1_6r = wwl_north(12,1,6)
+                        wlnorth_q1_6i = wwl_north(12,2,6)
+                        wlnorth_q1_7r = wwl_north(12,1,7)
+                        wlnorth_q1_7i = wwl_north(12,2,7)
+                        wlnorth_q1_8r = wwl_north(12,1,8)
+                        wlnorth_q1_8i = wwl_north(12,2,8)
+                        wlnorth_q2_1r = wwl_north(13,1,1)
+                        wlnorth_q2_1i = wwl_north(13,2,1)
+                        wlnorth_q2_2r = wwl_north(13,1,2)
+                        wlnorth_q2_2i = wwl_north(13,2,2)
+                        wlnorth_q2_3r = wwl_north(13,1,3)
+                        wlnorth_q2_3i = wwl_north(13,2,3)
+                        wlnorth_q2_4r = wwl_north(13,1,4)
+                        wlnorth_q2_4i = wwl_north(13,2,4)
+                        wlnorth_q2_5r = wwl_north(13,1,5)
+                        wlnorth_q2_5i = wwl_north(13,2,5)
+                        wlnorth_q2_6r = wwl_north(13,1,6)
+                        wlnorth_q2_6i = wwl_north(13,2,6)
+                        wlnorth_q2_7r = wwl_north(13,1,7)
+                        wlnorth_q2_7i = wwl_north(13,2,7)
+                        wlnorth_q2_8r = wwl_north(13,1,8)
+                        wlnorth_q2_8i = wwl_north(13,2,8)
+                        wlnorth_q3_1r = wwl_north(14,1,1)
+                        wlnorth_q3_1i = wwl_north(14,2,1)
+                        wlnorth_q3_2r = wwl_north(14,1,2)
+                        wlnorth_q3_2i = wwl_north(14,2,2)
+                        wlnorth_q3_3r = wwl_north(14,1,3)
+                        wlnorth_q3_3i = wwl_north(14,2,3)
+                        wlnorth_q3_4r = wwl_north(14,1,4)
+                        wlnorth_q3_4i = wwl_north(14,2,4)
+                        wlnorth_q3_5r = wwl_north(14,1,5)
+                        wlnorth_q3_5i = wwl_north(14,2,5)
+                        wlnorth_q3_6r = wwl_north(14,1,6)
+                        wlnorth_q3_6i = wwl_north(14,2,6)
+                        wlnorth_q3_7r = wwl_north(14,1,7)
+                        wlnorth_q3_7i = wwl_north(14,2,7)
+                        wlnorth_q3_8r = wwl_north(14,1,8)
+                        wlnorth_q3_8i = wwl_north(14,2,8)
+                        wlnorth_q4_1r = wwl_north(15,1,1)
+                        wlnorth_q4_1i = wwl_north(15,2,1)
+                        wlnorth_q4_2r = wwl_north(15,1,2)
+                        wlnorth_q4_2i = wwl_north(15,2,2)
+                        wlnorth_q4_3r = wwl_north(15,1,3)
+                        wlnorth_q4_3i = wwl_north(15,2,3)
+                        wlnorth_q4_4r = wwl_north(15,1,4)
+                        wlnorth_q4_4i = wwl_north(15,2,4)
+                        wlnorth_q4_5r = wwl_north(15,1,5)
+                        wlnorth_q4_5i = wwl_north(15,2,5)
+                        wlnorth_q4_6r = wwl_north(15,1,6)
+                        wlnorth_q4_6i = wwl_north(15,2,6)
+                        wlnorth_q4_7r = wwl_north(15,1,7)
+                        wlnorth_q4_7i = wwl_north(15,2,7)
+                        wlnorth_q4_8r = wwl_north(15,1,8)
+                        wlnorth_q4_8i = wwl_north(15,2,8)
+
+!ocl simd_redundant_vl(5)
+                        do p=0,4               ! parallel loop.
+                           m1 = 11 + p                ! translating the indices (j,p) to 1-dim index
+                           shinvrot1_q0_r = sh_inv_rot1(31+p,1,irz,iry,irx,ilevel)
+                           shinvrot1_q0_i = sh_inv_rot1(31+p,2,irz,iry,irx,ilevel)
+                           shinvrot2_q0_r = sh_inv_rot2(31+p,1,irz,iry,irx,ilevel)
+                           shinvrot2_q0_i = sh_inv_rot2(31+p,2,irz,iry,irx,ilevel)
+                           shinvrot1_q1_r = sh_inv_rot1(36+p,1,irz,iry,irx,ilevel)
+                           shinvrot1_q1_i = sh_inv_rot1(36+p,2,irz,iry,irx,ilevel)
+                           shinvrot2_q1_r = sh_inv_rot2(36+p,1,irz,iry,irx,ilevel)
+                           shinvrot2_q1_i = sh_inv_rot2(36+p,2,irz,iry,irx,ilevel)
+                           shinvrot1_q2_r = sh_inv_rot1(41+p,1,irz,iry,irx,ilevel)
+                           shinvrot1_q2_i = sh_inv_rot1(41+p,2,irz,iry,irx,ilevel)
+                           shinvrot2_q2_r = sh_inv_rot2(41+p,1,irz,iry,irx,ilevel)
+                           shinvrot2_q2_i = sh_inv_rot2(41+p,2,irz,iry,irx,ilevel)
+                           shinvrot1_q3_r = sh_inv_rot1(46+p,1,irz,iry,irx,ilevel)
+                           shinvrot1_q3_i = sh_inv_rot1(46+p,2,irz,iry,irx,ilevel)
+                           shinvrot2_q3_r = sh_inv_rot2(46+p,1,irz,iry,irx,ilevel)
+                           shinvrot2_q3_i = sh_inv_rot2(46+p,2,irz,iry,irx,ilevel)
+                           shinvrot1_q4_r = sh_inv_rot1(51+p,1,irz,iry,irx,ilevel)
+                           shinvrot1_q4_i = sh_inv_rot1(51+p,2,irz,iry,irx,ilevel)
+                           shinvrot2_q4_r = sh_inv_rot2(51+p,1,irz,iry,irx,ilevel)
+                           shinvrot2_q4_i = sh_inv_rot2(51+p,2,irz,iry,irx,ilevel)
+
+                           tmp_ce_r = wlnorth_q0_1r * shinvrot1_q0_r + wlnorth_q0_1i * shinvrot2_q0_r &
+                                  & + wlnorth_q1_1r * shinvrot1_q1_r + wlnorth_q1_1i * shinvrot2_q1_r &
+                                  & + wlnorth_q2_1r * shinvrot1_q2_r + wlnorth_q2_1i * shinvrot2_q2_r &
+                                  & + wlnorth_q3_1r * shinvrot1_q3_r + wlnorth_q3_1i * shinvrot2_q3_r &
+                                  & + wlnorth_q4_1r * shinvrot1_q4_r + wlnorth_q4_1i * shinvrot2_q4_r
+                           tmp_ce_i = wlnorth_q0_1r * shinvrot1_q0_i + wlnorth_q0_1i * shinvrot2_q0_i &
+                                  & + wlnorth_q1_1r * shinvrot1_q1_i + wlnorth_q1_1i * shinvrot2_q1_i &
+                                  & + wlnorth_q2_1r * shinvrot1_q2_i + wlnorth_q2_1i * shinvrot2_q2_i &
+                                  & + wlnorth_q3_1r * shinvrot1_q3_i + wlnorth_q3_1i * shinvrot2_q3_i &
+                                  & + wlnorth_q4_1r * shinvrot1_q4_i + wlnorth_q4_1i * shinvrot2_q4_i
+                           wl_omp(m1,1,icz0_1,icy0_1,icx0_1,iam) = wl_omp(m1,1,icz0_1,icy0_1,icx0_1,iam) + tmp_ce_r
+                           wl_omp(m1,2,icz0_1,icy0_1,icx0_1,iam) = wl_omp(m1,2,icz0_1,icy0_1,icx0_1,iam) + tmp_ce_i
+
+                           tmp_ce_r = wlnorth_q0_2r * shinvrot1_q0_r + wlnorth_q0_2i * shinvrot2_q0_r &
+                                  & + wlnorth_q1_2r * shinvrot1_q1_r + wlnorth_q1_2i * shinvrot2_q1_r &
+                                  & + wlnorth_q2_2r * shinvrot1_q2_r + wlnorth_q2_2i * shinvrot2_q2_r &
+                                  & + wlnorth_q3_2r * shinvrot1_q3_r + wlnorth_q3_2i * shinvrot2_q3_r &
+                                  & + wlnorth_q4_2r * shinvrot1_q4_r + wlnorth_q4_2i * shinvrot2_q4_r
+                           tmp_ce_i = wlnorth_q0_2r * shinvrot1_q0_i + wlnorth_q0_2i * shinvrot2_q0_i &
+                                  & + wlnorth_q1_2r * shinvrot1_q1_i + wlnorth_q1_2i * shinvrot2_q1_i &
+                                  & + wlnorth_q2_2r * shinvrot1_q2_i + wlnorth_q2_2i * shinvrot2_q2_i &
+                                  & + wlnorth_q3_2r * shinvrot1_q3_i + wlnorth_q3_2i * shinvrot2_q3_i &
+                                  & + wlnorth_q4_2r * shinvrot1_q4_i + wlnorth_q4_2i * shinvrot2_q4_i
+                           wl_omp(m1,1,icz0_2,icy0_2,icx0_2,iam) = wl_omp(m1,1,icz0_2,icy0_2,icx0_2,iam) + tmp_ce_r
+                           wl_omp(m1,2,icz0_2,icy0_2,icx0_2,iam) = wl_omp(m1,2,icz0_2,icy0_2,icx0_2,iam) + tmp_ce_i
+
+                           tmp_ce_r = wlnorth_q0_3r * shinvrot1_q0_r + wlnorth_q0_3i * shinvrot2_q0_r &
+                                  & + wlnorth_q1_3r * shinvrot1_q1_r + wlnorth_q1_3i * shinvrot2_q1_r &
+                                  & + wlnorth_q2_3r * shinvrot1_q2_r + wlnorth_q2_3i * shinvrot2_q2_r &
+                                  & + wlnorth_q3_3r * shinvrot1_q3_r + wlnorth_q3_3i * shinvrot2_q3_r &
+                                  & + wlnorth_q4_3r * shinvrot1_q4_r + wlnorth_q4_3i * shinvrot2_q4_r
+                           tmp_ce_i = wlnorth_q0_3r * shinvrot1_q0_i + wlnorth_q0_3i * shinvrot2_q0_i &
+                                  & + wlnorth_q1_3r * shinvrot1_q1_i + wlnorth_q1_3i * shinvrot2_q1_i &
+                                  & + wlnorth_q2_3r * shinvrot1_q2_i + wlnorth_q2_3i * shinvrot2_q2_i &
+                                  & + wlnorth_q3_3r * shinvrot1_q3_i + wlnorth_q3_3i * shinvrot2_q3_i &
+                                  & + wlnorth_q4_3r * shinvrot1_q4_i + wlnorth_q4_3i * shinvrot2_q4_i
+                           wl_omp(m1,1,icz0_3,icy0_3,icx0_3,iam) = wl_omp(m1,1,icz0_3,icy0_3,icx0_3,iam) + tmp_ce_r
+                           wl_omp(m1,2,icz0_3,icy0_3,icx0_3,iam) = wl_omp(m1,2,icz0_3,icy0_3,icx0_3,iam) + tmp_ce_i
+
+                           tmp_ce_r = wlnorth_q0_4r * shinvrot1_q0_r + wlnorth_q0_4i * shinvrot2_q0_r &
+                                  & + wlnorth_q1_4r * shinvrot1_q1_r + wlnorth_q1_4i * shinvrot2_q1_r &
+                                  & + wlnorth_q2_4r * shinvrot1_q2_r + wlnorth_q2_4i * shinvrot2_q2_r &
+                                  & + wlnorth_q3_4r * shinvrot1_q3_r + wlnorth_q3_4i * shinvrot2_q3_r &
+                                  & + wlnorth_q4_4r * shinvrot1_q4_r + wlnorth_q4_4i * shinvrot2_q4_r
+                           tmp_ce_i = wlnorth_q0_4r * shinvrot1_q0_i + wlnorth_q0_4i * shinvrot2_q0_i &
+                                  & + wlnorth_q1_4r * shinvrot1_q1_i + wlnorth_q1_4i * shinvrot2_q1_i &
+                                  & + wlnorth_q2_4r * shinvrot1_q2_i + wlnorth_q2_4i * shinvrot2_q2_i &
+                                  & + wlnorth_q3_4r * shinvrot1_q3_i + wlnorth_q3_4i * shinvrot2_q3_i &
+                                  & + wlnorth_q4_4r * shinvrot1_q4_i + wlnorth_q4_4i * shinvrot2_q4_i
+                           wl_omp(m1,1,icz0_4,icy0_4,icx0_4,iam) = wl_omp(m1,1,icz0_4,icy0_4,icx0_4,iam) + tmp_ce_r
+                           wl_omp(m1,2,icz0_4,icy0_4,icx0_4,iam) = wl_omp(m1,2,icz0_4,icy0_4,icx0_4,iam) + tmp_ce_i
+
+                           tmp_ce_r = wlnorth_q0_5r * shinvrot1_q0_r + wlnorth_q0_5i * shinvrot2_q0_r &
+                                  & + wlnorth_q1_5r * shinvrot1_q1_r + wlnorth_q1_5i * shinvrot2_q1_r &
+                                  & + wlnorth_q2_5r * shinvrot1_q2_r + wlnorth_q2_5i * shinvrot2_q2_r &
+                                  & + wlnorth_q3_5r * shinvrot1_q3_r + wlnorth_q3_5i * shinvrot2_q3_r &
+                                  & + wlnorth_q4_5r * shinvrot1_q4_r + wlnorth_q4_5i * shinvrot2_q4_r
+                           tmp_ce_i = wlnorth_q0_5r * shinvrot1_q0_i + wlnorth_q0_5i * shinvrot2_q0_i &
+                                  & + wlnorth_q1_5r * shinvrot1_q1_i + wlnorth_q1_5i * shinvrot2_q1_i &
+                                  & + wlnorth_q2_5r * shinvrot1_q2_i + wlnorth_q2_5i * shinvrot2_q2_i &
+                                  & + wlnorth_q3_5r * shinvrot1_q3_i + wlnorth_q3_5i * shinvrot2_q3_i &
+                                  & + wlnorth_q4_5r * shinvrot1_q4_i + wlnorth_q4_5i * shinvrot2_q4_i
+                           wl_omp(m1,1,icz0_5,icy0_5,icx0_5,iam) = wl_omp(m1,1,icz0_5,icy0_5,icx0_5,iam) + tmp_ce_r
+                           wl_omp(m1,2,icz0_5,icy0_5,icx0_5,iam) = wl_omp(m1,2,icz0_5,icy0_5,icx0_5,iam) + tmp_ce_i
+
+                           tmp_ce_r = wlnorth_q0_6r * shinvrot1_q0_r + wlnorth_q0_6i * shinvrot2_q0_r &
+                                  & + wlnorth_q1_6r * shinvrot1_q1_r + wlnorth_q1_6i * shinvrot2_q1_r &
+                                  & + wlnorth_q2_6r * shinvrot1_q2_r + wlnorth_q2_6i * shinvrot2_q2_r &
+                                  & + wlnorth_q3_6r * shinvrot1_q3_r + wlnorth_q3_6i * shinvrot2_q3_r &
+                                  & + wlnorth_q4_6r * shinvrot1_q4_r + wlnorth_q4_6i * shinvrot2_q4_r
+                           tmp_ce_i = wlnorth_q0_6r * shinvrot1_q0_i + wlnorth_q0_6i * shinvrot2_q0_i &
+                                  & + wlnorth_q1_6r * shinvrot1_q1_i + wlnorth_q1_6i * shinvrot2_q1_i &
+                                  & + wlnorth_q2_6r * shinvrot1_q2_i + wlnorth_q2_6i * shinvrot2_q2_i &
+                                  & + wlnorth_q3_6r * shinvrot1_q3_i + wlnorth_q3_6i * shinvrot2_q3_i &
+                                  & + wlnorth_q4_6r * shinvrot1_q4_i + wlnorth_q4_6i * shinvrot2_q4_i
+                           wl_omp(m1,1,icz0_6,icy0_6,icx0_6,iam) = wl_omp(m1,1,icz0_6,icy0_6,icx0_6,iam) + tmp_ce_r
+                           wl_omp(m1,2,icz0_6,icy0_6,icx0_6,iam) = wl_omp(m1,2,icz0_6,icy0_6,icx0_6,iam) + tmp_ce_i
+
+                           tmp_ce_r = wlnorth_q0_7r * shinvrot1_q0_r + wlnorth_q0_7i * shinvrot2_q0_r &
+                                  & + wlnorth_q1_7r * shinvrot1_q1_r + wlnorth_q1_7i * shinvrot2_q1_r &
+                                  & + wlnorth_q2_7r * shinvrot1_q2_r + wlnorth_q2_7i * shinvrot2_q2_r &
+                                  & + wlnorth_q3_7r * shinvrot1_q3_r + wlnorth_q3_7i * shinvrot2_q3_r &
+                                  & + wlnorth_q4_7r * shinvrot1_q4_r + wlnorth_q4_7i * shinvrot2_q4_r
+                           tmp_ce_i = wlnorth_q0_7r * shinvrot1_q0_i + wlnorth_q0_7i * shinvrot2_q0_i &
+                                  & + wlnorth_q1_7r * shinvrot1_q1_i + wlnorth_q1_7i * shinvrot2_q1_i &
+                                  & + wlnorth_q2_7r * shinvrot1_q2_i + wlnorth_q2_7i * shinvrot2_q2_i &
+                                  & + wlnorth_q3_7r * shinvrot1_q3_i + wlnorth_q3_7i * shinvrot2_q3_i &
+                                  & + wlnorth_q4_7r * shinvrot1_q4_i + wlnorth_q4_7i * shinvrot2_q4_i
+                           wl_omp(m1,1,icz0_7,icy0_7,icx0_7,iam) = wl_omp(m1,1,icz0_7,icy0_7,icx0_7,iam) + tmp_ce_r
+                           wl_omp(m1,2,icz0_7,icy0_7,icx0_7,iam) = wl_omp(m1,2,icz0_7,icy0_7,icx0_7,iam) + tmp_ce_i
+
+                           tmp_ce_r = wlnorth_q0_8r * shinvrot1_q0_r + wlnorth_q0_8i * shinvrot2_q0_r &
+                                  & + wlnorth_q1_8r * shinvrot1_q1_r + wlnorth_q1_8i * shinvrot2_q1_r &
+                                  & + wlnorth_q2_8r * shinvrot1_q2_r + wlnorth_q2_8i * shinvrot2_q2_r &
+                                  & + wlnorth_q3_8r * shinvrot1_q3_r + wlnorth_q3_8i * shinvrot2_q3_r &
+                                  & + wlnorth_q4_8r * shinvrot1_q4_r + wlnorth_q4_8i * shinvrot2_q4_r
+                           tmp_ce_i = wlnorth_q0_8r * shinvrot1_q0_i + wlnorth_q0_8i * shinvrot2_q0_i &
+                                  & + wlnorth_q1_8r * shinvrot1_q1_i + wlnorth_q1_8i * shinvrot2_q1_i &
+                                  & + wlnorth_q2_8r * shinvrot1_q2_i + wlnorth_q2_8i * shinvrot2_q2_i &
+                                  & + wlnorth_q3_8r * shinvrot1_q3_i + wlnorth_q3_8i * shinvrot2_q3_i &
+                                  & + wlnorth_q4_8r * shinvrot1_q4_i + wlnorth_q4_8i * shinvrot2_q4_i
+                           wl_omp(m1,1,icz0_8,icy0_8,icx0_8,iam) = wl_omp(m1,1,icz0_8,icy0_8,icx0_8,iam) + tmp_ce_r
+                           wl_omp(m1,2,icz0_8,icy0_8,icx0_8,iam) = wl_omp(m1,2,icz0_8,icy0_8,icx0_8,iam) + tmp_ce_i
+                        enddo
+
+!---- end Outer Reduction Loop Type Rolled Code.

@@ -1,0 +1,5 @@
+  5              ! FMM level
+  48 48 72       ! ncellx,ncelly,ncellz in *.mddef
+   81            ! nprocs, MUST be 2^n * 3^m
+manual           ! 'auto' or 'manual', MUST be left aligned
+   3  3  9       ! npx,npy,npz (read in 'manual' mode only)

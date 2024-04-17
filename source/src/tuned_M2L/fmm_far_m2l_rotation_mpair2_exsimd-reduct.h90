@@ -1,0 +1,130 @@
+!----------------------------------------------------------------------
+!MODYLAS ver. 1.1.0 
+!
+!Copyright (c) 2014-2019 Nagoya University
+!              2020-2023 The University of Tokyo
+!
+!Released under the MIT license.
+!see https://opensource.org/licenses/MIT
+!----------------------------------------------------------------------
+!MODYLAS Developers:
+!Yoshimichi Andoh, Kazushi Fujimoto, Tatsuya Sakashita, Noriyuki Yoshii, 
+!Zhiye Tang, Jiachao Zhang, Yuta Asano, Ryo Urano, Tetsuro Nagai, 
+!Atsushi Yamada, Hidekazu Kojima, Kensuke Iwahashi, Fumiyasu Mizutani, 
+!Shin-ichi Ichikawa, and Susumu Okazaki.
+!----------------------------------------------------------------------
+!    integer :: j,k,n,p,q, ind_1dim
+!    integer :: m1,m2
+!    integer :: m2_b
+!    integer :: ind_1dim_b
+!    real(4) :: tmp_shml
+!    real(4) :: tmp_ce_r, tmp_ce_i
+!    real(4) :: shrot1_r, shrot2_r
+!    real(4) :: shrot1_i, shrot2_i
+!    real(4) :: shinvrot1_r, shinvrot2_r
+!    real(4) :: shinvrot1_i, shinvrot2_i
+!    real(4) :: wwm_north(lm_length,2,8), wwl_north(lm_length,2,8)
+!    real(4) :: wm_1r, wm_2r
+!    real(4) :: wm_1i, wm_2i
+!    real(4) :: wlnorth_1r, wlnorth_2r
+!    real(4) :: wlnorth_1i, wlnorth_2i
+
+!  !$omp& private(j,k,n,p,q, m1,m2,m2_b, ind_1dim, ind_1dim_b, tmp_shml, tmp_ce_r, tmp_ce_i) &
+!  !$omp& private(wm_1r, wm_2r) &
+!  !$omp& private(wm_1i, wm_2i) &
+!  !$omp& private(shrot1_r, shrot1_i, shrot2_r, shrot2_i) &
+!  !$omp& private(shinvrot1_r, shinvrot1_i, shinvrot2_r, shinvrot2_i) &
+!  !$omp& private(wlnorth_1r, wlnorth_2r) &
+!  !$omp& private(wlnorth_1i, wlnorth_2i) &
+
+! SIMD loop type code. For an use of transposed rotation matrix for each J as an input.
+! Purpose is to avoid reduction within SIMD to decrease instruction and local recurrence.
+! Anther purpose is to reduce load/store by making outer loop unrolled.
+!
+! Drawback is poor parallelism of instruction. But the outer-loop unrolled code will have 
+! more instruction level parallelism.
+! S. Ichikawa, Jan 2019.
+
+!---- Outer Reduction Loop Type Rolled Code.
+                  wwm_north(:,:,1:2) = Czero
+                  wwl_north(:,:,1:2) = Czero
+
+                  ! Direct rotation
+                  do j=0,nmax                  ! parallel loop.
+                     m2_b = j*(j+1)/2 + 1               ! translating the indices (j,q) to 1-dim index
+                     ind_1dim_b = j*(j+1)*(2*j+1)/6 + 1 ! translating the indices (j,p,q) to 1-dim index
+                     do q=0,j                  ! reduction loop.
+                        m2 = m2_b + q                   ! translating the indices (j,q) to 1-dim index
+                        ind_1dim = ind_1dim_b + (j+1)*q ! translating the indices (j,p,q) to 1-dim index
+
+                        wm_1r = wm(m2,1,icz1_1,icy1_1,icx1_1)
+                        wm_1i = wm(m2,2,icz1_1,icy1_1,icx1_1)
+                        wm_2r = wm(m2,1,icz1_2,icy1_2,icx1_2)
+                        wm_2i = wm(m2,2,icz1_2,icy1_2,icx1_2)
+
+!ocl simd_redundant_vl(5)
+                        do p=0,j               ! parallel loop.
+                           m1 = m2_b + p                ! translating the indices (j,p) to 1-dim index
+                           shrot1_r = sh_rot1(ind_1dim+p,1,irz,iry,irx,ilevel)
+                           shrot1_i = sh_rot1(ind_1dim+p,2,irz,iry,irx,ilevel)
+                           shrot2_r = sh_rot2(ind_1dim+p,1,irz,iry,irx,ilevel)
+                           shrot2_i = sh_rot2(ind_1dim+p,2,irz,iry,irx,ilevel)
+
+                           wwm_north(m1,1,1) = wwm_north(m1,1,1) + wm_1r * shrot1_r + wm_1i * shrot2_r
+                           wwm_north(m1,2,1) = wwm_north(m1,2,1) + wm_1r * shrot1_i + wm_1i * shrot2_i
+                           wwm_north(m1,1,2) = wwm_north(m1,1,2) + wm_2r * shrot1_r + wm_2i * shrot2_r
+                           wwm_north(m1,2,2) = wwm_north(m1,2,2) + wm_2r * shrot1_i + wm_2i * shrot2_i
+                        enddo
+                     enddo
+                  enddo
+
+                  ! M2L for z-axis
+                  do j=0,nmax
+                     do n=0,nmax
+                        tmp_shml = shml(j+n,irz,iry,irx,ilevel)
+                        m1 = j*(j+1)/2 + 1 + 0
+                        m2 = n*(n+1)/2 + 1 + 0
+!ocl simd_redundant_vl(5)
+                        do k=0,min(j,n)
+                          wwl_north(m1+k,1,1) = wwl_north(m1+k,1,1) + wwm_north(m2+k,1,1) * tmp_shml
+                          wwl_north(m1+k,2,1) = wwl_north(m1+k,2,1) + wwm_north(m2+k,2,1) * tmp_shml
+                          wwl_north(m1+k,1,2) = wwl_north(m1+k,1,2) + wwm_north(m2+k,1,2) * tmp_shml
+                          wwl_north(m1+k,2,2) = wwl_north(m1+k,2,2) + wwm_north(m2+k,2,2) * tmp_shml
+                        enddo
+                     enddo
+                  enddo
+
+                  ! Inverse rotation
+                  do j=0,nmax                  ! parallel loop.
+                     m2_b = j*(j+1)/2 + 1               ! translating the indices (j,q) to 1-dim index
+                     ind_1dim_b = j*(j+1)*(2*j+1)/6 + 1 ! translating the indices (j,p,q) to 1-dim index
+                     do q=0,j                  ! reduction loop.
+                        m2 = m2_b + q                   ! translating the indices (j,q) to 1-dim index
+                        ind_1dim = ind_1dim_b + (j+1)*q ! translating the indices (j,p,q) to 1-dim index
+
+                        wlnorth_1r = wwl_north(m2,1,1)
+                        wlnorth_1i = wwl_north(m2,2,1)
+                        wlnorth_2r = wwl_north(m2,1,2)
+                        wlnorth_2i = wwl_north(m2,2,2)
+
+!ocl simd_redundant_vl(5)
+                        do p=0,j               ! parallel loop.
+                           m1 = m2_b + p                ! translating the indices (j,p) to 1-dim index
+                           shinvrot1_r = sh_inv_rot1(ind_1dim+p,1,irz,iry,irx,ilevel)
+                           shinvrot1_i = sh_inv_rot1(ind_1dim+p,2,irz,iry,irx,ilevel)
+                           shinvrot2_r = sh_inv_rot2(ind_1dim+p,1,irz,iry,irx,ilevel)
+                           shinvrot2_i = sh_inv_rot2(ind_1dim+p,2,irz,iry,irx,ilevel)
+
+                           tmp_ce_r = wlnorth_1r * shinvrot1_r + wlnorth_1i * shinvrot2_r
+                           tmp_ce_i = wlnorth_1r * shinvrot1_i + wlnorth_1i * shinvrot2_i
+                           wl_omp(m1,1,icz0_1,icy0_1,icx0_1,iam) = wl_omp(m1,1,icz0_1,icy0_1,icx0_1,iam) + tmp_ce_r
+                           wl_omp(m1,2,icz0_1,icy0_1,icx0_1,iam) = wl_omp(m1,2,icz0_1,icy0_1,icx0_1,iam) + tmp_ce_i
+
+                           tmp_ce_r = wlnorth_2r * shinvrot1_r + wlnorth_2i * shinvrot2_r
+                           tmp_ce_i = wlnorth_2r * shinvrot1_i + wlnorth_2i * shinvrot2_i
+                           wl_omp(m1,1,icz0_2,icy0_2,icx0_2,iam) = wl_omp(m1,1,icz0_2,icy0_2,icx0_2,iam) + tmp_ce_r
+                           wl_omp(m1,2,icz0_2,icy0_2,icx0_2,iam) = wl_omp(m1,2,icz0_2,icy0_2,icx0_2,iam) + tmp_ce_i
+                        enddo
+                     enddo
+                  enddo
+!---- end Outer Reduction Loop Type Rolled Code.

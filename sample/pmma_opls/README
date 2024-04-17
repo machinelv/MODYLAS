@@ -1,0 +1,23 @@
+Essential preprocessor(s):
+-DOPLSAMBER
+
+An example of cmake:
+
+(Intel compiler)
+~/cmake-3.4.2/bin/cmake -DCMAKE_Fortran_COMPILER=mpiifort -DCMAKE_Fortran_FLAGS="-O3 -xHost -DOPLSAMBER -cpp" ../source
+
+(GNU compiler)
+~/cmake-3.4.2/bin/cmake -DCMAKE_Fortran_COMPILER=mpif90 -DCMAKE_Fortran_FLAGS="-O3 -ftree-vectorize -mavx -DOPLSAMBER -cpp" ../source
+
+Note that cmake 3.x.x should be installed by yourself.
+
+How to run:
+
+ln -s ../../build_opls/src/modylas .
+export OMP_NUM_THREADS=1
+mpirun -np 8 ./modylas pmma160mer > output &
+
+======================================
+Text is written by Y. Andoh @ 20181213
+                     update @ 20230227
+======================================

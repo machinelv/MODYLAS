@@ -1,0 +1,24 @@
+git clone https://github.com/wesbarnett/libxdrfile.git
+cd libxdrfile
+mkdir build
+cd build
+cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local
+make
+sudo make install
+
+
+# When compiling MODYLAS, 
+# please add -DXTC in -DCMAKE_Fortran_FLAGS="", 
+# and add -DXTC=on outside -DCMAKE_Fortran_FLAGS=""
+# as suggested below
+cmake -DCMAKE_Fortran_COMPILER=mpiifort -DCMAKE_Fortran_FLAGS="-O3 -cpp -DXTC" -DXTC=on ../source
+
+## or  if you change compiler, 
+# export CC=fccpx
+# export CXX=fccpx
+# export FC=mpifrtpx
+# before cmake 
+
+## If you see the error message like "ld: skipping incompatible libxdrfile.so"  
+## check whether your C compiler is the same as your modylas Fortran comipler company /opt/FJSVmxlang/bin/fccpx when you build the libxdrfile 
+## if not, you should change the compiler in CmakeCache.txt in libxdrfile build directory and then re-make

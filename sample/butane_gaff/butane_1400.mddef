@@ -1,0 +1,95 @@
+<input> version= 1.0.0 </input>
+
+<output> 
+  ascii=yes
+  backup=no
+  mdtrj=yes
+  <trajectory> start=0 interval=110 </trajectory> 
+  <restart> start=0 interval=110 </restart> 
+  <monitor> start=0 interval=1 </monitor> 
+#  xtc=yes
+#  dcd=yes   
+#  <trjdcd> start=0 interval=1000 </trjdcd>
+#  <trjxtc> start=0 interval=10 </trjxtc>
+</output> 
+
+<integrator> 
+  dt_long=2.0e-15      # [sec]
+# dt=2.0e-15      # [sec]
+  steps=110
+  <multiple time step>
+    nshort_per_middle=1
+    nmiddle_per_long=1
+#   nstep_skip_middle=1
+#   nstep_skip_long  =1
+  </multiple time step>
+# <optimize> 
+#   step_length=0.20
+#   convergence=1.0d-10
+#   up_rate=1.0
+#   down_rate=1.0
+# </optimize> 
+  <shake> 
+    maxiteration=10000000 
+    shake_tolerance=1.0e-08   # relative value
+  </shake> 
+</integrator> 
+
+<ensemble>
+  ensemble=nve    # opt/nve/nvt/npt_a
+# ensemble=npt_z  # opt/nve/nvt/npt_a
+# temperature=298.150000   # [K]
+# maxwell_velocities=yes
+# velocity_scaling=yes
+# <thermostat>
+#   tau_Q=0.50000e-12 # [sec]
+#   initialize=yes
+# </thermostat> 
+# pressure=101325.000000   # [Pa]
+# Pref_inner =  1.01325E+05  # virtual P for inner loop
+# Pref_outer =  0.00000E+05  # virtual P for outer loop
+# <barostat> 
+#   tau_Q=0.5000e-12 # [sec]
+#   tau_W=1.0000e-12
+#   initialize=yes
+# </barostat> 
+</ensemble>
+
+<intermolecular interaction> 
+  ncell=8
+  <twobody> 
+    cutoff=12.0         #  [A]
+    LJcorrection=yes    # yes/no
+  </twobody> 
+# type=fmm              # ewald/pme/fmm
+# <fmm> 
+#   ULswitch=0 
+#   sterm=no
+#   nmax=4
+# </fmm>
+   type=pme            # ewald/pme/cmm
+   <pme> 
+     alpha=0.207491e+10   # Ewald alpha [1/m]
+     bsorder=4         # order in B-spline
+     nfft1=64          # grid number
+     nfft2=64          # along x,y,z-axis
+     nfft3=64          # (2^n * 3^m * 5^l)
+   </pme> 
+#  type=ewald          # ewald/pme/cmm
+#  <ewald> 
+#    alpha=0.320e+10   # Ewald alpha [1/m]
+#    h2max=1000        # square of maximum wave vectors
+#  </ewald> 
+</intermolecular interaction> 
+
+<mpi>
+  division=auto  # manual/auto
+# division=manual  # manual/auto
+# nxdiv=16       # omitted, when division=auto
+# nydiv=8        # omitted, when division=auto
+# nzdiv=16       # omitted, when division=auto
+</mpi>
+
+<debug>
+# 0step_stop=yes  # yes/no
+</debug>

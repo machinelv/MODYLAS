@@ -1,0 +1,77 @@
+<forcefield>
+  type=charmm
+</forcefield>
+
+<system>
+    0      4428     # TIP3P
+</system>
+
+<topology and parameters>
+  nspecies= 1
+
+  # === TIP3P ===
+  <species>
+    id = 0
+    natom = 3
+    <mass>       15.9994       1.0080        1.0080       </mass>
+    <charge>     -0.8340       0.4170        0.4170     </charge>
+    <epsilon>     1.5210e-1    4.600e-2      4.600e-2  </epsilon>
+    <r>           3.5364       4.490e-1      4.490e-1        </r>
+
+    nvoidpair_coulomb= 6
+    <coulomb void pair>
+      0 1
+      0 2
+      1 0
+      1 2
+      2 0
+      2 1
+    </coulomb void pair>
+
+    nvoidpair_lj= 6
+    <lj void pair>
+      0 1
+      0 2
+      1 0
+      1 2
+      2 0
+      2 1
+    </lj void pair>
+
+    nspecialpair_lj= 0
+    <lj special pair>
+    </lj special pair>
+
+    <shake pair>
+        0 1   0.95720
+        0 2   0.95720
+        1 2   1.51390
+    </shake pair>
+
+    nbond= 0
+#    <bond>
+#        0 1   4.500000e+02   9.572000e-01
+#        0 2   4.500000e+02   9.572000e-01
+#    </bond>
+    nangle= 0
+#    <angle>
+#        1 0 2    5.500000e+01  1.045200e+02
+#    </angle>
+    nub= 0
+    ndihedral= 0
+    nitorsion= 0
+    ncmap= 0
+
+    <segments>
+      nsegment= 1
+      <segment>
+         ID=0
+         natom=3
+         <atom>   0    1    2   </atom>
+      </segment>
+    </segments>
+
+  </species>
+
+</topology and parameters>
+

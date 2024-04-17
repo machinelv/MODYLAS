@@ -1,0 +1,67 @@
+<input> version= 1.0.0 </input>
+
+<output>
+  ascii=yes
+  dcd=yes
+  <trajectory> start=0 interval=1010 </trajectory>
+  <trjdcd> start=0 interval=1010 </trjdcd>
+  <restart> start=0 interval=1010 </restart>
+  <monitor> start=0 interval=1 </monitor>
+</output>
+
+<integrator>
+  dt_long=1.0e-15      # [sec]
+# dt=1.0e-15      # [sec]
+  steps=1010
+  <multiple time step>
+    nshort_per_middle=1
+    nmiddle_per_long=1
+#   nstep_skip_middle=1
+#   nstep_skip_long  =1
+  </multiple time step>
+  <shake>
+    maxiteration=10000000
+    shake_tolerance=1.0e-08   # relative value
+  </shake>
+</integrator>
+
+<ensemble>
+  ensemble=npt_a    # opt/nve/nvt/npt_a
+  temperature=423.150000   # [K]
+# maxwell_velocities=no
+# velocity_scaling=yes
+ <thermostat>
+   tau_Q=0.50000e-12 # [sec]
+   initialize=no
+ </thermostat>
+ pressure=101325.000000   # [Pa]
+ Pref_inner =  1.01325E+05  # virtual P for inner loop
+ Pref_outer =  0.00000E+05  # virtual P for outer loop
+ <barostat>
+   tau_Q=0.5000e-12 # [sec]
+   tau_W=1.0000e-12
+   initialize=no
+ </barostat>
+</ensemble>
+
+<intermolecular interaction>
+  <twobody>
+    cutoff=12.0         #  [A]
+    LJcorrection=yes    # yes/no
+  </twobody>
+  ncell=8
+  type=fmm          # pme/fmm
+  <fmm>
+    nmax=4
+    ULswitch=0
+    sterm=no
+  </fmm>
+</intermolecular interaction>
+
+<mpi>
+  division=auto  # manual/auto
+# division=manual  # manual/auto
+# nxdiv=16       # omitted, when division=auto
+# nydiv=8        # omitted, when division=auto
+# nzdiv=16       # omitted, when division=auto
+</mpi>

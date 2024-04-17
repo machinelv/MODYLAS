@@ -1,0 +1,70 @@
+#
+# Table of Contentes
+#
+# [1] How to compile
+# [2] How to build cmake (optional)
+
+[1] How to compile:
+
+cmake 3.x.x is essential for compiling MODYLAS.
+If it is not installed, go to [2].
+
+0) Create build/ directory
+
+  >mkdir build
+  >cd build/
+
+1) Run cmake in build/ directory
+
+  Most basic set for MD calcualtions with FMM (gfortran with open-mpi):
+  >cmake -DCMAKE_Fortran_COMPILER=mpif90 -DCMAKE_Fortran_FLAGS="-O3 -ftree-vectorize -mavx -cpp"  ../source
+
+  In the case of ifort with mpiifort, use:
+  >cmake -DCMAKE_Fortran_COMPILER=mpiifort -DCMAKE_Fortran_FLAGS="-O3 -xHost -align array64byte -cpp" ../source
+
+  In the case of frtpx, use:
+  >cmake -DCMAKE_Fortran_COMPILER=mpifrtpx -DCMAKE_Fortran_FLAGS="-Kfast,simd=2,openmp,parallel,ocl,optmsg=2 -X9 -Cpp" ../source
+
+2) Make binaries
+
+  >make
+  => The following binaries will be built.
+     build/src/modylas
+     build/src/modylas-mdtrj2xtc
+     build/src/modylas-mdtrj2xyz
+     build/src/modylas-mdxtc2ana
+     build/src/modylas-text2bin
+
+3) Notes
+
+  Note 1: To use OPLS force field, add -DOPLSAMBER into -DCMAKE_Fortran_FLAGS=""
+
+  >cmake -DCMAKE_Fortran_COMPILER=mpif90 -DCMAKE_Fortran_FLAGS="-O3 -ftree-vectorize -mavx -cpp -DOPLSAMBER"  ../source
+
+  Note 2: To use GAFF force field, add -DOPLSAMBER -DGAFF into -DCMAKE_Fortran_FLAGS=""
+
+  >cmake -DCMAKE_Fortran_COMPILER=mpif90 -DCMAKE_Fortran_FLAGS="-O3 -ftree-vectorize -mavx -cpp -DOPLSAMBER -DGAFF"  ../source
+
+
+[2] How to build cmake:
+
+1)Download a file "cmake-3.x.x.tar.gz" from https://cmake.org/download/
+
+2)Uncompress the downloaded .tar.gz file:
+
+   >tar xvfz cmake-3.x.x.tar.gz
+
+3)build cmake
+
+  >cd cmake-3.x.x/
+  >./bootstrap
+  >make
+  => cmake-3.x.x/bin/cmake will be built.
+
+To use the built cmake, overwrite the PATH environmental varialbe.
+  >export PATH=$PATH:~/cmake-3.x.x/bin  [sh/bash]
+  >setenv PATH $PATH:~/cmake-3.x.x/bin  [csh]
+
+Or, specify the absolute path for cmake-3.x.x such as
+  >~/cmake-3.x.x/bin/cmake -DCMAKE_Fortran_COMPILER=mpif90 ...
+

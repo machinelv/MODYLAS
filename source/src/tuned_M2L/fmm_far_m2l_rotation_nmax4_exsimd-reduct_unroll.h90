@@ -1,0 +1,528 @@
+!----------------------------------------------------------------------
+!MODYLAS ver. 1.1.0 
+!
+!Copyright (c) 2014-2019 Nagoya University
+!              2020-2023 The University of Tokyo
+!
+!Released under the MIT license.
+!see https://opensource.org/licenses/MIT
+!----------------------------------------------------------------------
+!MODYLAS Developers:
+!Yoshimichi Andoh, Kazushi Fujimoto, Tatsuya Sakashita, Noriyuki Yoshii, 
+!Zhiye Tang, Jiachao Zhang, Yuta Asano, Ryo Urano, Tetsuro Nagai, 
+!Atsushi Yamada, Hidekazu Kojima, Kensuke Iwahashi, Fumiyasu Mizutani, 
+!Shin-ichi Ichikawa, and Susumu Okazaki.
+!----------------------------------------------------------------------
+!    integer :: j,k,n,p,q
+!    integer :: m1,m2
+!    real(4) :: tmp_shml
+!    real(4) :: tmp_ce_r, tmp_ce_i
+
+!  !$omp& private(j,k,n,p,q, m1,m2, tmp_shml, tmp_ce_r, tmp_ce_i) &
+
+! SIMD loop type code. For an use of transposed rotation matrix for each J as an input.
+! Purpose is to avoid reduction within SIMD to decrease instruction and local recurrence.
+! Also, important purpose is to reduce load/store by making outer loop unrolled.
+! M2L for z-axis is fully unrolled. It is modefied version of original code.
+!
+! Drawback is poor parallelism of instruction. But the outer-loop unrolled code will have 
+! more instruction level parallelism.
+! S. Ichikawa, Jan 2019.
+
+!---- Outer Reduction Loop Type Rolled Code.
+!                  wm_north = Czero
+!                  wl_north = Czero
+!
+!                  ! Direct rotation
+!                  do j=0,nmax                  ! parallel loop.
+!                     m2_b = j*(j+1)/2 + 1               ! translating the indices (j,q) to 1-dim index
+!                     ind_1dim_b = j*(j+1)*(2*j+1)/6 + 1 ! translating the indices (j,p,q) to 1-dim index
+!                     do q=0,j                  ! reduction loop.
+!                        m2 = m2_b + q                   ! translating the indices (j,q) to 1-dim index
+!                        ind_1dim = ind_1dim_b + (j+1)*q ! translating the indices (j,p,q) to 1-dim index
+!!ocl simd_redundant_vl(5)
+!                        do p=0,j               ! parallel loop.
+!                           m1 = m2_b + p                ! translating the indices (j,p) to 1-dim index
+!                           wm_north(m1,1) = wm_north(m1,1) &
+!                                & + wm(m2,1,icz1,icy1,icx1) * sh_rot1(ind_1dim+p,1,irz,iry,irx,ilevel) &
+!                                & + wm(m2,2,icz1,icy1,icx1) * sh_rot2(ind_1dim+p,1,irz,iry,irx,ilevel)
+!                           wm_north(m1,2) = wm_north(m1,2) &
+!                                & + wm(m2,1,icz1,icy1,icx1) * sh_rot1(ind_1dim+p,2,irz,iry,irx,ilevel) &
+!                                & + wm(m2,2,icz1,icy1,icx1) * sh_rot2(ind_1dim+p,2,irz,iry,irx,ilevel)
+!                        enddo
+!                     enddo
+!                  enddo
+!
+!                  ! M2L for z-axis
+!                  do j=0,nmax
+!                     do n=0,nmax
+!                        tmp_shml = shml(j+n,irz,iry,irx,ilevel)
+!                        m1 = j*(j+1)/2 + 1 + 0
+!                        m2 = n*(n+1)/2 + 1 + 0
+!!ocl simd_redundant_vl(5)
+!                        do k=0,min(j,n)
+!                          wl_north(m1+k,1) = wl_north(m1+k,1) + wm_north(m2+k,1) * tmp_shml
+!                          wl_north(m1+k,2) = wl_north(m1+k,2) + wm_north(m2+k,2) * tmp_shml
+!                        enddo
+!                     enddo
+!                  enddo
+!
+!                  ! Inverse rotation
+!                  do j=0,nmax                  ! parallel loop.
+!                     m2_b = j*(j+1)/2 + 1               ! translating the indices (j,q) to 1-dim index
+!                     ind_1dim_b = j*(j+1)*(2*j+1)/6 + 1 ! translating the indices (j,p,q) to 1-dim index
+!                     do q=0,j                  ! reduction loop.
+!                        m2 = m2_b + q                   ! translating the indices (j,q) to 1-dim index
+!                        ind_1dim = ind_1dim_b + (j+1)*q ! translating the indices (j,p,q) to 1-dim index
+!!ocl simd_redundant_vl(5)
+!                        do p=0,j               ! parallel loop.
+!                           m1 = m2_b + p                ! translating the indices (j,p) to 1-dim index
+!                           tmp_ce_r = &
+!                                & + wl_north(m2,1) * sh_inv_rot1(ind_1dim+p,1,irz,iry,irx,ilevel) &
+!                                & + wl_north(m2,2) * sh_inv_rot2(ind_1dim+p,1,irz,iry,irx,ilevel)
+!                           wl_omp(m1,1,icz0,icy0,icx0,iam) = wl_omp(m1,1,icz0,icy0,icx0,iam) + tmp_ce_r
+!                           tmp_ce_i = &
+!                                & + wl_north(m2,1) * sh_inv_rot1(ind_1dim+p,2,irz,iry,irx,ilevel) &
+!                                & + wl_north(m2,2) * sh_inv_rot2(ind_1dim+p,2,irz,iry,irx,ilevel)
+!                           wl_omp(m1,2,icz0,icy0,icx0,iam) = wl_omp(m1,2,icz0,icy0,icx0,iam) + tmp_ce_i
+!                        enddo
+!                     enddo
+!                  enddo
+!---- end Outer Reduction Loop Type Rolled Code.
+
+
+!---- Outer Reduction Loop Type Unrolled Code.
+                  wm_north = Czero
+                  wl_north = Czero
+
+                  !! Direct rotation
+                  ! j=0, m2_b=1, ind_1dim_b=1
+                        do p=0,0               ! parallel loop.
+                           m1 = 1 + p                   ! translating the indices (j,p) to 1-dim index
+                           wm_north(m1,1) = wm_north(m1,1) &
+                                & + wm( 1,1,icz1,icy1,icx1) * sh_rot1( 1+p,1,irz,iry,irx,ilevel) &
+                                & + wm( 1,2,icz1,icy1,icx1) * sh_rot2( 1+p,1,irz,iry,irx,ilevel)
+                           wm_north(m1,2) = wm_north(m1,2) &
+                                & + wm( 1,1,icz1,icy1,icx1) * sh_rot1( 1+p,2,irz,iry,irx,ilevel) &
+                                & + wm( 1,2,icz1,icy1,icx1) * sh_rot2( 1+p,2,irz,iry,irx,ilevel)
+                        enddo
+                  ! j=1, m2_b=2, ind_1dim_b=2
+!ocl simd_redundant_vl(5)
+                        do p=0,1               ! parallel loop.
+                           m1 = 2 + p                   ! translating the indices (j,p) to 1-dim index
+                           wm_north(m1,1) = wm_north(m1,1) &
+                            ! q=0, m2=2
+                                & + wm( 2,1,icz1,icy1,icx1) * sh_rot1( 2+p,1,irz,iry,irx,ilevel) &
+                                & + wm( 2,2,icz1,icy1,icx1) * sh_rot2( 2+p,1,irz,iry,irx,ilevel) &
+                            ! q=1, m2=3
+                                & + wm( 3,1,icz1,icy1,icx1) * sh_rot1( 4+p,1,irz,iry,irx,ilevel) &
+                                & + wm( 3,2,icz1,icy1,icx1) * sh_rot2( 4+p,1,irz,iry,irx,ilevel)
+                           wm_north(m1,2) = wm_north(m1,2) &
+                            ! q=0, m2=2
+                                & + wm( 2,1,icz1,icy1,icx1) * sh_rot1( 2+p,2,irz,iry,irx,ilevel) &
+                                & + wm( 2,2,icz1,icy1,icx1) * sh_rot2( 2+p,2,irz,iry,irx,ilevel) &
+                            ! q=1, m2=3
+                                & + wm( 3,1,icz1,icy1,icx1) * sh_rot1( 4+p,2,irz,iry,irx,ilevel) &
+                                & + wm( 3,2,icz1,icy1,icx1) * sh_rot2( 4+p,2,irz,iry,irx,ilevel)
+                        enddo
+                  ! j=2, m2_b=4, ind_1dim_b=6
+!ocl simd_redundant_vl(5)
+                        do p=0,2               ! parallel loop.
+                           m1 = 4 + p                   ! translating the indices (j,p) to 1-dim index
+                           wm_north(m1,1) = wm_north(m1,1) &
+                            ! q=0, m2=4
+                                & + wm( 4,1,icz1,icy1,icx1) * sh_rot1( 6+p,1,irz,iry,irx,ilevel) &
+                                & + wm( 4,2,icz1,icy1,icx1) * sh_rot2( 6+p,1,irz,iry,irx,ilevel) &
+                            ! q=1, m2=5
+                                & + wm( 5,1,icz1,icy1,icx1) * sh_rot1( 9+p,1,irz,iry,irx,ilevel) &
+                                & + wm( 5,2,icz1,icy1,icx1) * sh_rot2( 9+p,1,irz,iry,irx,ilevel) &
+                            ! q=2, m2=6
+                                & + wm( 6,1,icz1,icy1,icx1) * sh_rot1(12+p,1,irz,iry,irx,ilevel) &
+                                & + wm( 6,2,icz1,icy1,icx1) * sh_rot2(12+p,1,irz,iry,irx,ilevel)
+                           wm_north(m1,2) = wm_north(m1,2) &
+                            ! q=0, m2=4
+                                & + wm( 4,1,icz1,icy1,icx1) * sh_rot1( 6+p,2,irz,iry,irx,ilevel) &
+                                & + wm( 4,2,icz1,icy1,icx1) * sh_rot2( 6+p,2,irz,iry,irx,ilevel) &
+                            ! q=1, m2=5
+                                & + wm( 5,1,icz1,icy1,icx1) * sh_rot1( 9+p,2,irz,iry,irx,ilevel) &
+                                & + wm( 5,2,icz1,icy1,icx1) * sh_rot2( 9+p,2,irz,iry,irx,ilevel) &
+                            ! q=2, m2=6
+                                & + wm( 6,1,icz1,icy1,icx1) * sh_rot1(12+p,2,irz,iry,irx,ilevel) &
+                                & + wm( 6,2,icz1,icy1,icx1) * sh_rot2(12+p,2,irz,iry,irx,ilevel)
+                        enddo
+                  ! j=3, m2_b=7, ind_1dim_b=15
+!ocl simd_redundant_vl(5)
+                        do p=0,3               ! parallel loop.
+                           m1 = 7 + p                   ! translating the indices (j,p) to 1-dim index
+                           wm_north(m1,1) = wm_north(m1,1) &
+                            ! q=0, m2=7
+                                & + wm( 7,1,icz1,icy1,icx1) * sh_rot1(15+p,1,irz,iry,irx,ilevel) &
+                                & + wm( 7,2,icz1,icy1,icx1) * sh_rot2(15+p,1,irz,iry,irx,ilevel) &
+                            ! q=1, m2=8
+                                & + wm( 8,1,icz1,icy1,icx1) * sh_rot1(19+p,1,irz,iry,irx,ilevel) &
+                                & + wm( 8,2,icz1,icy1,icx1) * sh_rot2(19+p,1,irz,iry,irx,ilevel) &
+                            ! q=2, m2=9
+                                & + wm( 9,1,icz1,icy1,icx1) * sh_rot1(23+p,1,irz,iry,irx,ilevel) &
+                                & + wm( 9,2,icz1,icy1,icx1) * sh_rot2(23+p,1,irz,iry,irx,ilevel) &
+                            ! q=3, m2=10
+                                & + wm(10,1,icz1,icy1,icx1) * sh_rot1(27+p,1,irz,iry,irx,ilevel) &
+                                & + wm(10,2,icz1,icy1,icx1) * sh_rot2(27+p,1,irz,iry,irx,ilevel)
+                           wm_north(m1,2) = wm_north(m1,2) &
+                            ! q=0, m2=7
+                                & + wm( 7,1,icz1,icy1,icx1) * sh_rot1(15+p,2,irz,iry,irx,ilevel) &
+                                & + wm( 7,2,icz1,icy1,icx1) * sh_rot2(15+p,2,irz,iry,irx,ilevel) &
+                            ! q=1, m2=8
+                                & + wm( 8,1,icz1,icy1,icx1) * sh_rot1(19+p,2,irz,iry,irx,ilevel) &
+                                & + wm( 8,2,icz1,icy1,icx1) * sh_rot2(19+p,2,irz,iry,irx,ilevel) &
+                            ! q=2, m2=9
+                                & + wm( 9,1,icz1,icy1,icx1) * sh_rot1(23+p,2,irz,iry,irx,ilevel) &
+                                & + wm( 9,2,icz1,icy1,icx1) * sh_rot2(23+p,2,irz,iry,irx,ilevel) &
+                            ! q=3, m2=10
+                                & + wm(10,1,icz1,icy1,icx1) * sh_rot1(27+p,2,irz,iry,irx,ilevel) &
+                                & + wm(10,2,icz1,icy1,icx1) * sh_rot2(27+p,2,irz,iry,irx,ilevel)
+                        enddo
+                  ! j=4, m2_b=11, ind_1dim_b=31
+!ocl simd_redundant_vl(5)
+                        do p=0,4               ! parallel loop.
+                           m1 = 11 + p                  ! translating the indices (j,p) to 1-dim index
+                           wm_north(m1,1) = wm_north(m1,1) &
+                            ! q=0, m2=11
+                                & + wm(11,1,icz1,icy1,icx1) * sh_rot1(31+p,1,irz,iry,irx,ilevel) &
+                                & + wm(11,2,icz1,icy1,icx1) * sh_rot2(31+p,1,irz,iry,irx,ilevel) &
+                            ! q=1, m2=12
+                                & + wm(12,1,icz1,icy1,icx1) * sh_rot1(36+p,1,irz,iry,irx,ilevel) &
+                                & + wm(12,2,icz1,icy1,icx1) * sh_rot2(36+p,1,irz,iry,irx,ilevel) &
+                            ! q=2, m2=13
+                                & + wm(13,1,icz1,icy1,icx1) * sh_rot1(41+p,1,irz,iry,irx,ilevel) &
+                                & + wm(13,2,icz1,icy1,icx1) * sh_rot2(41+p,1,irz,iry,irx,ilevel) &
+                            ! q=3, m2=14
+                                & + wm(14,1,icz1,icy1,icx1) * sh_rot1(46+p,1,irz,iry,irx,ilevel) &
+                                & + wm(14,2,icz1,icy1,icx1) * sh_rot2(46+p,1,irz,iry,irx,ilevel) &
+                            ! q=4, m2=15
+                                & + wm(15,1,icz1,icy1,icx1) * sh_rot1(51+p,1,irz,iry,irx,ilevel) &
+                                & + wm(15,2,icz1,icy1,icx1) * sh_rot2(51+p,1,irz,iry,irx,ilevel)
+                           wm_north(m1,2) = wm_north(m1,2) &
+                            ! q=0, m2=11
+                                & + wm(11,1,icz1,icy1,icx1) * sh_rot1(31+p,2,irz,iry,irx,ilevel) &
+                                & + wm(11,2,icz1,icy1,icx1) * sh_rot2(31+p,2,irz,iry,irx,ilevel) &
+                            ! q=1, m2=12
+                                & + wm(12,1,icz1,icy1,icx1) * sh_rot1(36+p,2,irz,iry,irx,ilevel) &
+                                & + wm(12,2,icz1,icy1,icx1) * sh_rot2(36+p,2,irz,iry,irx,ilevel) &
+                            ! q=2, m2=13
+                                & + wm(13,1,icz1,icy1,icx1) * sh_rot1(41+p,2,irz,iry,irx,ilevel) &
+                                & + wm(13,2,icz1,icy1,icx1) * sh_rot2(41+p,2,irz,iry,irx,ilevel) &
+                            ! q=3, m2=14
+                                & + wm(14,1,icz1,icy1,icx1) * sh_rot1(46+p,2,irz,iry,irx,ilevel) &
+                                & + wm(14,2,icz1,icy1,icx1) * sh_rot2(46+p,2,irz,iry,irx,ilevel) &
+                            ! q=4, m2=15
+                                & + wm(15,1,icz1,icy1,icx1) * sh_rot1(51+p,2,irz,iry,irx,ilevel) &
+                                & + wm(15,2,icz1,icy1,icx1) * sh_rot2(51+p,2,irz,iry,irx,ilevel)
+                        enddo
+
+!                  ! M2L for z-axis
+!                  do j=0,nmax
+!                     do n=0,nmax
+!                        tmp_shml = shml(j+n,irz,iry,irx,ilevel)
+!                        m1 = j*(j+1)/2 + 1 + 0
+!                        m2 = n*(n+1)/2 + 1 + 0
+!!ocl simd_redundant_vl(5)
+!                        do k=0,min(j,n)
+!                          wl_north(m1+k,1) = wl_north(m1+k,1) + wm_north(m2+k,1) * tmp_shml
+!                          wl_north(m1+k,2) = wl_north(m1+k,2) + wm_north(m2+k,2) * tmp_shml
+!                        enddo
+!                     enddo
+!                  enddo
+
+                   ! M2L for z-axis
+                   ! j=0, k=0
+                   wl_north(1,1) = &
+                     &   wm_north(1,1) * shml(0,irz,iry,irx,ilevel) &
+                     & + wm_north(2,1) * shml(1,irz,iry,irx,ilevel) &
+                     & + wm_north(4,1) * shml(2,irz,iry,irx,ilevel) &
+                     & + wm_north(7,1) * shml(3,irz,iry,irx,ilevel) &
+                     & + wm_north(11,1) * shml(4,irz,iry,irx,ilevel)
+                   wl_north(1,2) = &
+                     &   wm_north(1,2) * shml(0,irz,iry,irx,ilevel) &
+                     & + wm_north(2,2) * shml(1,irz,iry,irx,ilevel) &
+                     & + wm_north(4,2) * shml(2,irz,iry,irx,ilevel) &
+                     & + wm_north(7,2) * shml(3,irz,iry,irx,ilevel) &
+                     & + wm_north(11,2) * shml(4,irz,iry,irx,ilevel)
+                   ! j=1, k=0
+                   wl_north(2,1) = &
+                     &   wm_north(1,1) * shml(1,irz,iry,irx,ilevel) &
+                     & + wm_north(2,1) * shml(2,irz,iry,irx,ilevel) &
+                     & + wm_north(4,1) * shml(3,irz,iry,irx,ilevel) &
+                     & + wm_north(7,1) * shml(4,irz,iry,irx,ilevel) &
+                     & + wm_north(11,1) * shml(5,irz,iry,irx,ilevel)
+                   wl_north(2,2) = &
+                     &   wm_north(1,2) * shml(1,irz,iry,irx,ilevel) &
+                     & + wm_north(2,2) * shml(2,irz,iry,irx,ilevel) &
+                     & + wm_north(4,2) * shml(3,irz,iry,irx,ilevel) &
+                     & + wm_north(7,2) * shml(4,irz,iry,irx,ilevel) &
+                     & + wm_north(11,2) * shml(5,irz,iry,irx,ilevel)
+                   ! j=1, k=1
+                   wl_north(3,1) = &
+                     &   wm_north(3,1) * shml(2,irz,iry,irx,ilevel) &
+                     & + wm_north(5,1) * shml(3,irz,iry,irx,ilevel) &
+                     & + wm_north(8,1) * shml(4,irz,iry,irx,ilevel) &
+                     & + wm_north(12,1) * shml(5,irz,iry,irx,ilevel)
+                   wl_north(3,2) = &
+                     &   wm_north(3,2) * shml(2,irz,iry,irx,ilevel) &
+                     & + wm_north(5,2) * shml(3,irz,iry,irx,ilevel) &
+                     & + wm_north(8,2) * shml(4,irz,iry,irx,ilevel) &
+                     & + wm_north(12,2) * shml(5,irz,iry,irx,ilevel)
+                   ! j=2, k=0
+                   wl_north(4,1) = &
+                     &   wm_north(1,1) * shml(2,irz,iry,irx,ilevel) &
+                     & + wm_north(2,1) * shml(3,irz,iry,irx,ilevel) &
+                     & + wm_north(4,1) * shml(4,irz,iry,irx,ilevel) &
+                     & + wm_north(7,1) * shml(5,irz,iry,irx,ilevel) &
+                     & + wm_north(11,1) * shml(6,irz,iry,irx,ilevel)
+                   wl_north(4,2) = &
+                     &   wm_north(1,2) * shml(2,irz,iry,irx,ilevel) &
+                     & + wm_north(2,2) * shml(3,irz,iry,irx,ilevel) &
+                     & + wm_north(4,2) * shml(4,irz,iry,irx,ilevel) &
+                     & + wm_north(7,2) * shml(5,irz,iry,irx,ilevel) &
+                     & + wm_north(11,2) * shml(6,irz,iry,irx,ilevel)
+                   ! j=2, k=1
+                   wl_north(5,1) = &
+                     &   wm_north(3,1) * shml(3,irz,iry,irx,ilevel) &
+                     & + wm_north(5,1) * shml(4,irz,iry,irx,ilevel) &
+                     & + wm_north(8,1) * shml(5,irz,iry,irx,ilevel) &
+                     & + wm_north(12,1) * shml(6,irz,iry,irx,ilevel)
+                   wl_north(5,2) = &
+                     &   wm_north(3,2) * shml(3,irz,iry,irx,ilevel) &
+                     & + wm_north(5,2) * shml(4,irz,iry,irx,ilevel) &
+                     & + wm_north(8,2) * shml(5,irz,iry,irx,ilevel) &
+                     & + wm_north(12,2) * shml(6,irz,iry,irx,ilevel)
+                   ! j=2, k=2
+                   wl_north(6,1) = &
+                     &   wm_north(6,1) * shml(4,irz,iry,irx,ilevel) &
+                     & + wm_north(9,1) * shml(5,irz,iry,irx,ilevel) &
+                     & + wm_north(13,1) * shml(6,irz,iry,irx,ilevel)
+                   wl_north(6,2) = &
+                     &   wm_north(6,2) * shml(4,irz,iry,irx,ilevel) &
+                     & + wm_north(9,2) * shml(5,irz,iry,irx,ilevel) &
+                     & + wm_north(13,2) * shml(6,irz,iry,irx,ilevel)
+                   ! j=3, k=0
+                   wl_north(7,1) = &
+                     &   wm_north(1,1) * shml(3,irz,iry,irx,ilevel) &
+                     & + wm_north(2,1) * shml(4,irz,iry,irx,ilevel) &
+                     & + wm_north(4,1) * shml(5,irz,iry,irx,ilevel) &
+                     & + wm_north(7,1) * shml(6,irz,iry,irx,ilevel) &
+                     & + wm_north(11,1) * shml(7,irz,iry,irx,ilevel)
+                   wl_north(7,2) = &
+                     &   wm_north(1,2) * shml(3,irz,iry,irx,ilevel) &
+                     & + wm_north(2,2) * shml(4,irz,iry,irx,ilevel) &
+                     & + wm_north(4,2) * shml(5,irz,iry,irx,ilevel) &
+                     & + wm_north(7,2) * shml(6,irz,iry,irx,ilevel) &
+                     & + wm_north(11,2) * shml(7,irz,iry,irx,ilevel)
+                   ! j=3, k=1
+                   wl_north(8,1) = &
+                     &   wm_north(3,1) * shml(4,irz,iry,irx,ilevel) &
+                     & + wm_north(5,1) * shml(5,irz,iry,irx,ilevel) &
+                     & + wm_north(8,1) * shml(6,irz,iry,irx,ilevel) &
+                     & + wm_north(12,1) * shml(7,irz,iry,irx,ilevel)
+                   wl_north(8,2) = &
+                     &   wm_north(3,2) * shml(4,irz,iry,irx,ilevel) &
+                     & + wm_north(5,2) * shml(5,irz,iry,irx,ilevel) &
+                     & + wm_north(8,2) * shml(6,irz,iry,irx,ilevel) &
+                     & + wm_north(12,2) * shml(7,irz,iry,irx,ilevel)
+                   ! j=3, k=2
+                   wl_north(9,1) = &
+                     &   wm_north(6,1) * shml(5,irz,iry,irx,ilevel) &
+                     & + wm_north(9,1) * shml(6,irz,iry,irx,ilevel) &
+                     & + wm_north(13,1) * shml(7,irz,iry,irx,ilevel)
+                   wl_north(9,2) = &
+                     &   wm_north(6,2) * shml(5,irz,iry,irx,ilevel) &
+                     & + wm_north(9,2) * shml(6,irz,iry,irx,ilevel) &
+                     & + wm_north(13,2) * shml(7,irz,iry,irx,ilevel)
+                   ! j=3, k=3
+                   wl_north(10,1) = &
+                     &   wm_north(10,1) * shml(6,irz,iry,irx,ilevel) &
+                     & + wm_north(14,1) * shml(7,irz,iry,irx,ilevel)
+                   wl_north(10,2) = &
+                     &   wm_north(10,2) * shml(6,irz,iry,irx,ilevel) &
+                     & + wm_north(14,2) * shml(7,irz,iry,irx,ilevel)
+                   ! j=4, k=0
+                   wl_north(11,1) = &
+                     &   wm_north(1,1) * shml(4,irz,iry,irx,ilevel) &
+                     & + wm_north(2,1) * shml(5,irz,iry,irx,ilevel) &
+                     & + wm_north(4,1) * shml(6,irz,iry,irx,ilevel) &
+                     & + wm_north(7,1) * shml(7,irz,iry,irx,ilevel) &
+                     & + wm_north(11,1) * shml(8,irz,iry,irx,ilevel)
+                   wl_north(11,2) = &
+                     &   wm_north(1,2) * shml(4,irz,iry,irx,ilevel) &
+                     & + wm_north(2,2) * shml(5,irz,iry,irx,ilevel) &
+                     & + wm_north(4,2) * shml(6,irz,iry,irx,ilevel) &
+                     & + wm_north(7,2) * shml(7,irz,iry,irx,ilevel) &
+                     & + wm_north(11,2) * shml(8,irz,iry,irx,ilevel)
+                   ! j=4, k=1
+                   wl_north(12,1) = &
+                     &   wm_north(3,1) * shml(5,irz,iry,irx,ilevel) &
+                     & + wm_north(5,1) * shml(6,irz,iry,irx,ilevel) &
+                     & + wm_north(8,1) * shml(7,irz,iry,irx,ilevel) &
+                     & + wm_north(12,1) * shml(8,irz,iry,irx,ilevel)
+                   wl_north(12,2) = &
+                     &   wm_north(3,2) * shml(5,irz,iry,irx,ilevel) &
+                     & + wm_north(5,2) * shml(6,irz,iry,irx,ilevel) &
+                     & + wm_north(8,2) * shml(7,irz,iry,irx,ilevel) &
+                     & + wm_north(12,2) * shml(8,irz,iry,irx,ilevel)
+                   ! j=4, k=2
+                   wl_north(13,1) = &
+                     &   wm_north(6,1) * shml(6,irz,iry,irx,ilevel) &
+                     & + wm_north(9,1) * shml(7,irz,iry,irx,ilevel) &
+                     & + wm_north(13,1) * shml(8,irz,iry,irx,ilevel)
+                   wl_north(13,2) = &
+                     &   wm_north(6,2) * shml(6,irz,iry,irx,ilevel) &
+                     & + wm_north(9,2) * shml(7,irz,iry,irx,ilevel) &
+                     & + wm_north(13,2) * shml(8,irz,iry,irx,ilevel)
+                   ! j=4, k=3
+                   wl_north(14,1) = &
+                     &   wm_north(10,1) * shml(7,irz,iry,irx,ilevel) &
+                     & + wm_north(14,1) * shml(8,irz,iry,irx,ilevel)
+                   wl_north(14,2) = &
+                     &   wm_north(10,2) * shml(7,irz,iry,irx,ilevel) &
+                     & + wm_north(14,2) * shml(8,irz,iry,irx,ilevel)
+                   ! j=4, k=4
+                   wl_north(15,1) = &
+                        &   wm_north(15,1) * shml(8,irz,iry,irx,ilevel)
+                   wl_north(15,2) = &
+                        &   wm_north(15,2) * shml(8,irz,iry,irx,ilevel)
+
+                  !! Inverse rotation
+                  ! j=0, m2_b=1, ind_1dim_b=1
+!ocl simd_redundant_vl(5)
+                        do p=0,0               ! parallel loop.
+                           m1 = 1 + p                   ! translating the indices (j,p) to 1-dim index
+                           tmp_ce_r = &
+                                & + wl_north( 1,1) * sh_inv_rot1( 1+p,1,irz,iry,irx,ilevel) &
+                                & + wl_north( 1,2) * sh_inv_rot2( 1+p,1,irz,iry,irx,ilevel)
+                           wl_omp(m1,1,icz0,icy0,icx0,iam) = wl_omp(m1,1,icz0,icy0,icx0,iam) + tmp_ce_r
+                           tmp_ce_i = &
+                                & + wl_north( 1,1) * sh_inv_rot1( 1+p,2,irz,iry,irx,ilevel) &
+                                & + wl_north( 1,2) * sh_inv_rot2( 1+p,2,irz,iry,irx,ilevel)
+                           wl_omp(m1,2,icz0,icy0,icx0,iam) = wl_omp(m1,2,icz0,icy0,icx0,iam) + tmp_ce_i
+                        enddo
+                  ! j=1, m2_b=2, ind_1dim_b=2
+!ocl simd_redundant_vl(5)
+                        do p=0,1               ! parallel loop.
+                           m1 = 2 + p                   ! translating the indices (j,p) to 1-dim index
+                           tmp_ce_r = &
+                            ! q=0, m2=2
+                                & + wl_north( 2,1) * sh_inv_rot1( 2+p,1,irz,iry,irx,ilevel) &
+                                & + wl_north( 2,2) * sh_inv_rot2( 2+p,1,irz,iry,irx,ilevel) &
+                            ! q=1, m2=3
+                                & + wl_north( 3,1) * sh_inv_rot1( 4+p,1,irz,iry,irx,ilevel) &
+                                & + wl_north( 3,2) * sh_inv_rot2( 4+p,1,irz,iry,irx,ilevel)
+                           wl_omp(m1,1,icz0,icy0,icx0,iam) = wl_omp(m1,1,icz0,icy0,icx0,iam) + tmp_ce_r
+                           tmp_ce_i = &
+                            ! q=0, m2=2
+                                & + wl_north( 2,1) * sh_inv_rot1( 2+p,2,irz,iry,irx,ilevel) &
+                                & + wl_north( 2,2) * sh_inv_rot2( 2+p,2,irz,iry,irx,ilevel) &
+                            ! q=1, m2=3
+                                & + wl_north( 3,1) * sh_inv_rot1( 4+p,2,irz,iry,irx,ilevel) &
+                                & + wl_north( 3,2) * sh_inv_rot2( 4+p,2,irz,iry,irx,ilevel)
+                           wl_omp(m1,2,icz0,icy0,icx0,iam) = wl_omp(m1,2,icz0,icy0,icx0,iam) + tmp_ce_i
+                        enddo
+                  ! j=2, m2_b=4, ind_1dim_b=6
+!ocl simd_redundant_vl(5)
+                        do p=0,2               ! parallel loop.
+                           m1 = 4 + p                   ! translating the indices (j,p) to 1-dim index
+                           tmp_ce_r = &
+                            ! q=0, m2=4
+                                & + wl_north( 4,1) * sh_inv_rot1( 6+p,1,irz,iry,irx,ilevel) &
+                                & + wl_north( 4,2) * sh_inv_rot2( 6+p,1,irz,iry,irx,ilevel) &
+                            ! q=1, m2=5
+                                & + wl_north( 5,1) * sh_inv_rot1( 9+p,1,irz,iry,irx,ilevel) &
+                                & + wl_north( 5,2) * sh_inv_rot2( 9+p,1,irz,iry,irx,ilevel) &
+                            ! q=2, m2=6
+                                & + wl_north( 6,1) * sh_inv_rot1(12+p,1,irz,iry,irx,ilevel) &
+                                & + wl_north( 6,2) * sh_inv_rot2(12+p,1,irz,iry,irx,ilevel)
+                           wl_omp(m1,1,icz0,icy0,icx0,iam) = wl_omp(m1,1,icz0,icy0,icx0,iam) + tmp_ce_r
+                           tmp_ce_i = &
+                            ! q=0, m2=4
+                                & + wl_north( 4,1) * sh_inv_rot1( 6+p,2,irz,iry,irx,ilevel) &
+                                & + wl_north( 4,2) * sh_inv_rot2( 6+p,2,irz,iry,irx,ilevel) &
+                            ! q=1, m2=5
+                                & + wl_north( 5,1) * sh_inv_rot1( 9+p,2,irz,iry,irx,ilevel) &
+                                & + wl_north( 5,2) * sh_inv_rot2( 9+p,2,irz,iry,irx,ilevel) &
+                            ! q=2, m2=6
+                                & + wl_north( 6,1) * sh_inv_rot1(12+p,2,irz,iry,irx,ilevel) &
+                                & + wl_north( 6,2) * sh_inv_rot2(12+p,2,irz,iry,irx,ilevel)
+                           wl_omp(m1,2,icz0,icy0,icx0,iam) = wl_omp(m1,2,icz0,icy0,icx0,iam) + tmp_ce_i
+                        enddo
+                  ! j=3, m2_b=7, ind_1dim_b=15
+!ocl simd_redundant_vl(5)
+                        do p=0,3               ! parallel loop.
+                           m1 = 7 + p                   ! translating the indices (j,p) to 1-dim index
+                           tmp_ce_r = &
+                            ! q=0, m2=7
+                                & + wl_north( 7,1) * sh_inv_rot1(15+p,1,irz,iry,irx,ilevel) &
+                                & + wl_north( 7,2) * sh_inv_rot2(15+p,1,irz,iry,irx,ilevel) &
+                            ! q=1, m2=8
+                                & + wl_north( 8,1) * sh_inv_rot1(19+p,1,irz,iry,irx,ilevel) &
+                                & + wl_north( 8,2) * sh_inv_rot2(19+p,1,irz,iry,irx,ilevel) &
+                            ! q=2, m2=9
+                                & + wl_north( 9,1) * sh_inv_rot1(23+p,1,irz,iry,irx,ilevel) &
+                                & + wl_north( 9,2) * sh_inv_rot2(23+p,1,irz,iry,irx,ilevel) &
+                            ! q=3, m2=10
+                                & + wl_north(10,1) * sh_inv_rot1(27+p,1,irz,iry,irx,ilevel) &
+                                & + wl_north(10,2) * sh_inv_rot2(27+p,1,irz,iry,irx,ilevel)
+                           wl_omp(m1,1,icz0,icy0,icx0,iam) = wl_omp(m1,1,icz0,icy0,icx0,iam) + tmp_ce_r
+                           tmp_ce_i = &
+                            ! q=0, m2=7
+                                & + wl_north( 7,1) * sh_inv_rot1(15+p,2,irz,iry,irx,ilevel) &
+                                & + wl_north( 7,2) * sh_inv_rot2(15+p,2,irz,iry,irx,ilevel) &
+                            ! q=1, m2=8
+                                & + wl_north( 8,1) * sh_inv_rot1(19+p,2,irz,iry,irx,ilevel) &
+                                & + wl_north( 8,2) * sh_inv_rot2(19+p,2,irz,iry,irx,ilevel) &
+                            ! q=2, m2=9
+                                & + wl_north( 9,1) * sh_inv_rot1(23+p,2,irz,iry,irx,ilevel) &
+                                & + wl_north( 9,2) * sh_inv_rot2(23+p,2,irz,iry,irx,ilevel) &
+                            ! q=3, m2=10
+                                & + wl_north(10,1) * sh_inv_rot1(27+p,2,irz,iry,irx,ilevel) &
+                                & + wl_north(10,2) * sh_inv_rot2(27+p,2,irz,iry,irx,ilevel)
+                           wl_omp(m1,2,icz0,icy0,icx0,iam) = wl_omp(m1,2,icz0,icy0,icx0,iam) + tmp_ce_i
+                        enddo
+                  ! j=4, m2_b=11, ind_1dim_b=31
+!ocl simd_redundant_vl(5)
+                        do p=0,4               ! parallel loop.
+                           m1 = 11 + p                  ! translating the indices (j,p) to 1-dim index
+                           tmp_ce_r = &
+                            ! q=0, m2=11
+                                & + wl_north(11,1) * sh_inv_rot1(31+p,1,irz,iry,irx,ilevel) &
+                                & + wl_north(11,2) * sh_inv_rot2(31+p,1,irz,iry,irx,ilevel) &
+                            ! q=1, m2=12
+                                & + wl_north(12,1) * sh_inv_rot1(36+p,1,irz,iry,irx,ilevel) &
+                                & + wl_north(12,2) * sh_inv_rot2(36+p,1,irz,iry,irx,ilevel) &
+                            ! q=2, m2=13
+                                & + wl_north(13,1) * sh_inv_rot1(41+p,1,irz,iry,irx,ilevel) &
+                                & + wl_north(13,2) * sh_inv_rot2(41+p,1,irz,iry,irx,ilevel) &
+                            ! q=3, m2=14
+                                & + wl_north(14,1) * sh_inv_rot1(46+p,1,irz,iry,irx,ilevel) &
+                                & + wl_north(14,2) * sh_inv_rot2(46+p,1,irz,iry,irx,ilevel) &
+                            ! q=4, m2=15
+                                & + wl_north(15,1) * sh_inv_rot1(51+p,1,irz,iry,irx,ilevel) &
+                                & + wl_north(15,2) * sh_inv_rot2(51+p,1,irz,iry,irx,ilevel)
+                           wl_omp(m1,1,icz0,icy0,icx0,iam) = wl_omp(m1,1,icz0,icy0,icx0,iam) + tmp_ce_r
+                           tmp_ce_i = &
+                            ! q=0, m2=11
+                                & + wl_north(11,1) * sh_inv_rot1(31+p,2,irz,iry,irx,ilevel) &
+                                & + wl_north(11,2) * sh_inv_rot2(31+p,2,irz,iry,irx,ilevel) &
+                            ! q=1, m2=12
+                                & + wl_north(12,1) * sh_inv_rot1(36+p,2,irz,iry,irx,ilevel) &
+                                & + wl_north(12,2) * sh_inv_rot2(36+p,2,irz,iry,irx,ilevel) &
+                            ! q=2, m2=13
+                                & + wl_north(13,1) * sh_inv_rot1(41+p,2,irz,iry,irx,ilevel) &
+                                & + wl_north(13,2) * sh_inv_rot2(41+p,2,irz,iry,irx,ilevel) &
+                            ! q=3, m2=14
+                                & + wl_north(14,1) * sh_inv_rot1(46+p,2,irz,iry,irx,ilevel) &
+                                & + wl_north(14,2) * sh_inv_rot2(46+p,2,irz,iry,irx,ilevel) &
+                            ! q=4, m2=15
+                                & + wl_north(15,1) * sh_inv_rot1(51+p,2,irz,iry,irx,ilevel) &
+                                & + wl_north(15,2) * sh_inv_rot2(51+p,2,irz,iry,irx,ilevel)
+                           wl_omp(m1,2,icz0,icy0,icx0,iam) = wl_omp(m1,2,icz0,icy0,icx0,iam) + tmp_ce_i
+                        enddo
+
+!---- End Outer Reduction Loop Type Unrolled Code.

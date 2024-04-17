@@ -1,0 +1,58 @@
+<output> 
+  ascii=yes
+  <trajectory> start=0 interval=20 </trajectory> 
+  <restart> start=0 interval=10000 </restart> 
+  <monitor> start=0 interval=1 </monitor> 
+</output> 
+<condition> 
+  dt=1.0e-15      # [sec]
+  steps=10000
+  ensemble=npt_a    # opt/nve/nvt/npt_a
+# velocity_scaling=yes
+# maxwell_velocities=yes
+#  <optimize> 
+#    step_length=0.20
+#  </optimize> 
+   temperature=298.150000   # [K]
+   pressure=101325.000000   # [Pa]
+#  <respa>
+#    nstep_skip_middle=2
+#    nstep_skip_long  =4
+##   Pref_inner =  1.01325E+05  # virtual P for inner loop
+##   Pref_outer =  0.00000E+05  # virtual P for outer loop
+#  </respa>
+</condition> 
+<mpi>
+  division=auto  # manual/auto
+# division=manual  # manual/auto
+# nxdiv=16       # omitted, when division=auto
+# nydiv=8        # omitted, when division=auto
+# nzdiv=16       # omitted, when division=auto
+</mpi>
+<shake> 
+  maxiteration=10000000 
+  shake_tolerance=1.0e-08   # relative value
+</shake> 
+<thermostat>
+ tau_Q=0.50000e-12 # [sec]
+# initialize=yes
+</thermostat> 
+<barostat> 
+ tau_Q=0.5000e-12 # [sec]
+ tau_W=1.0000e-12
+# initialize=yes
+</barostat> 
+<periodic> 
+  <force> 
+    cutoff=12.0         #  [A]
+    LJcorrection=no     # yes/no
+  </force> 
+  type=cmm          # pmewald/cmm
+  <cmm> 
+    ncell=8
+    ndirect=2 
+    ULswitch=0 
+    sterm=no
+    <mincell>  4   2   2   </mincell>
+  </cmm>
+</periodic> 
